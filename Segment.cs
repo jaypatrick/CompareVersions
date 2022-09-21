@@ -1,6 +1,4 @@
-﻿
-
-namespace CompareVersions.UI;
+﻿namespace CompareVersions.UI;
 
 /// <summary>
 ///     Class that represents a single segment of <see cref="Version"/> object
@@ -40,7 +38,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// <value>
     /// The value.
     /// </value>
-    public int Value { get; init; }
+    public required int Value { get; init; }
     /// <summary>
     /// Defaults this instance.
     /// </summary>

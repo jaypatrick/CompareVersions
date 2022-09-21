@@ -3,14 +3,14 @@
 /// <summary>
 ///    Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment"/> objects
 /// </summary>
-/// <seealso cref="System.IComparable<CompareVersions.UI.Version></CompareVersions.UI.Version>" />
-/// <seealso cref="System.IEquatable<CompareVersions.UI.Version></CompareVersions.UI.Version>" />
+/// <seealso cref="System.IComparable{CompareVersions.UI.Version}>
+/// <seealso cref="System.IEquatable{CompareVersions.UI.Version}
 /// <seealso cref="System.IComparable" />
 [TypeConverter(typeof(VersionConverter))]
 public class Version : IComparable<Version>, IEquatable<Version>, IComparable, System.ICloneable
 {
     private readonly string tooManySegments = "Version string can only have at most 4 segments.";
-    string separator = ".";
+    private readonly char separator = Constants.VersionSeparators[0];
 
     /// <summary>
     /// Gets the <see cref="Segment"/> with the specified position.
@@ -55,7 +55,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
                   new Segment(SegmentType.Minor, version.Minor),
                   new Segment(SegmentType.Patch, version.Build),
                   new Segment(SegmentType.Build, version.Revision)
-                }
+              }
             )
     { }
 
@@ -65,7 +65,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     /// <param name="versionString">The version string.</param>
     /// <param name="separator"></param>
     [SetsRequiredMembers()]
-    public Version(string versionString, char separator = '.')
+    public Version(string versionString, char separator)
 
     {
         var segmentedString = versionString.Split(separator);
@@ -147,7 +147,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     /// Gets the version.
     /// </summary>
     /// <returns></returns>
-    public (Segment major, Segment minor, Segment patch, Segment build) GetVersion()
+    public (Segment major, Segment minor, Segment? patch, Segment? build) GetVersion()
         => (this.MajorSegment, this.MinorSegment, this.PatchSegment, this.BuildSegment);
 
     private void SetVersionSegmentProperties(List<Segment> segments)
@@ -199,21 +199,24 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     /// </summary>
     /// <param name="index">The index.</param>
     /// <returns></returns>
-    public Segment GetSegment(int index) => this.Segments[index];
+    public Segment GetSegment(int index)
+        => this.Segments[index];
 
     /// <summary>
     /// Gets the segment.
     /// </summary>
     /// <param name="segmentType">Type of the segment.</param>
     /// <returns></returns>
-    public Segment GetSegment(SegmentType segmentType) => this.Segments[(int)segmentType];
+    public Segment GetSegment(SegmentType segmentType)
+        => this.Segments[(int)segmentType];
 
     /// <summary>
     /// Replaces the segment.
     /// </summary>
     /// <param name="segment">The segment.</param>
     /// <returns></returns>
-    public bool ReplaceSegment(Segment segment) => this.AddSegment(segment, true);
+    public bool ReplaceSegment(Segment segment)
+        => this.AddSegment(segment, true);
 
     /// <summary>
     /// Replaces the segment.
@@ -221,7 +224,8 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     /// <param name="segmentType">Type of the segment.</param>
     /// <param name="value">The value.</param>
     /// <returns></returns>
-    public bool ReplaceSegment(SegmentType segmentType, int value) => this.AddSegment(segmentType, value, true);
+    public bool ReplaceSegment(SegmentType segmentType, int value)
+        => this.AddSegment(segmentType, value, true);
 
     /// <summary>
     /// Removes the segment.
@@ -309,7 +313,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     /// </summary>
     /// <returns>
     /// A <see cref="System.String" /> that represents this instance.
-    /// </returns>
+    /// <returns>A <see cref="System.String"/>string representation of this object, e.g major.minor.patch.build</returns>
     public override string ToString()
     {
         StringBuilder segments = new StringBuilder();
@@ -340,7 +344,9 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
             (this.MinorSegment != other.MinorSegment) ||
             (this.PatchSegment != other.PatchSegment) ||
             (this.BuildSegment != other.BuildSegment))
+        {
             return false;
+        }
 
         return true;
     }
@@ -535,7 +541,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
             patchSegment: new Segment(segmentType: PatchSegment.SegmentType, value: PatchSegment.Value),
             buildSegment: new Segment(segmentType: BuildSegment.SegmentType, value: BuildSegment.Value))
         {
-            separator = separator,
+            //separator = separator,
             Segments = Segments.ConvertAll(thisSegment => new Segment(segmentType: thisSegment.SegmentType, value: thisSegment.Value))
         };
     }

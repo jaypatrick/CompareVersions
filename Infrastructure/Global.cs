@@ -1,4 +1,6 @@
-﻿global using CompareVersions.UI;
+﻿global using CompareVersions.Infrastructure;
+global using CompareVersions.Interfaces;
+global using CompareVersions.UI;
 global using System.Collections;
 global using System.ComponentModel;
 global using System.Diagnostics.CodeAnalysis;
