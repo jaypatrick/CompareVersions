@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Version = CompareVersions.UI.Version;
 
 namespace CompareVersions;
 
@@ -8,9 +9,6 @@ namespace CompareVersions;
 /// <typeparam name="T"></typeparam>
 public class Harness<T> where T : UI.Version
 {
-    private readonly int floor = Constants.VersionSegmentFloor;
-    private readonly int ceiling = Constants.VersionSegmentCeiling;
-
     /// <summary>
     /// Gets the comparison operations.
     /// </summary>
@@ -64,6 +62,7 @@ public class Harness<T> where T : UI.Version
     public async Task RunAsync(IList<string> args)
     {
         var writer = this.serviceProvider.GetRequiredService<IMessageWriter>();
+        char separator = Constants.VersionSeparators[0];
 
         writer.Write($"Hello World from writer of type {writer.GetType()}");
 
@@ -83,12 +82,12 @@ public class Harness<T> where T : UI.Version
 
             if (useEqual == "y" || useEqual == "Y")
             {
-                version1 = version2 = createRandomVersionString();
+                version1 = version2 = Version.CreateRandom(separator).ToString();
             }
             else
             {
-                version1 = createRandomVersionString();
-                version2 = createRandomVersionString();
+                version1 = Version.CreateRandom(separator).ToString();
+                version2 = Version.CreateRandom(separator).ToString();
             }
 
             // TODO: Work on the TryFormat methods
@@ -135,27 +134,5 @@ public class Harness<T> where T : UI.Version
         }
 
         Console.ReadLine();
-    }
-
-    /// <summary>
-    /// Creates the random version string.
-    /// </summary>
-    /// <returns>A <see cref="String"/>value of the version.</returns>
-    private string createRandomVersionString()
-    {
-        char separator = Constants.VersionSeparators[0];
-        int maxSegments = Constants.MaxNumberOfSegments;
-        StringBuilder versionString = new();
-
-        for (int i = 1; i <= maxSegments; i++)
-        {
-            var quad = RandomNumberGenerator.GetInt32(floor, ceiling);
-
-            versionString.Append(quad);
-            versionString.Append(separator);
-        }
-
-        versionString.Length--;
-        return versionString.ToString();
     }
 }

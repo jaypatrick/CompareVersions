@@ -1,4 +1,6 @@
-﻿namespace CompareVersions.UI;
+﻿using CompareVersions.Extensions;
+
+namespace CompareVersions.UI;
 
 /// <summary>
 ///    Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment"/> objects
@@ -9,8 +11,10 @@
 [TypeConverter(typeof(VersionConverter))]
 public class Version : IComparable<Version>, IEquatable<Version>, IComparable, System.ICloneable
 {
-    private readonly string tooManySegments = "Version string can only have at most 4 segments.";
-    private readonly char separator = Constants.VersionSeparators[0];
+    private static readonly string tooManySegments = "Version string can only have at most 4 segments.";
+    private static readonly char _separator = Constants.VersionSeparators[0];
+    private static readonly int _floor = Constants.VersionSegmentFloor;
+    private static readonly int _ceiling = Constants.VersionSegmentCeiling;
 
     /// <summary>
     /// Gets the <see cref="Segment"/> with the specified position.
@@ -157,6 +161,13 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
         this.PatchSegment = segments[2] ?? Segment.Default;
         this.BuildSegment = segments[3] ?? Segment.Default;
     }
+
+    /// <summary>
+    /// Creates a random Version object
+    /// </summary>
+    /// <param name="separator"></param>
+    /// <returns>A full constructed <see cref="Version"/>object for consumption.</returns>
+    public static Version CreateRandom(char? separator) => new Version().CreateRandom(separator ?? _separator);
 
     /// <summary>
     /// Adds the segment.
@@ -320,7 +331,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
         foreach (var segment in this.Segments)
         {
             segments.Append(segment);
-            segments.Append(separator);
+            segments.Append(_separator);
         }
 
         segments.Length--;
@@ -541,7 +552,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
             patchSegment: new Segment(segmentType: PatchSegment.SegmentType, value: PatchSegment.Value),
             buildSegment: new Segment(segmentType: BuildSegment.SegmentType, value: BuildSegment.Value))
         {
-            //separator = separator,
+            //_separator = _separator,
             Segments = Segments.ConvertAll(thisSegment => new Segment(segmentType: thisSegment.SegmentType, value: thisSegment.Value))
         };
     }

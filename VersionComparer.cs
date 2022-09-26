@@ -1,6 +1,4 @@
-﻿using CompareVersions.Interfaces;
-
-namespace CompareVersions.UI;
+﻿namespace CompareVersions.UI;
 
 /// <summary>
 /// Class containing operations that compare version strings
@@ -10,11 +8,23 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
 {
     private readonly char separator = Constants.VersionSeparators[0];
 
+    /// <summary>
+    /// Compares the specified left side version.
+    /// </summary>
+    /// <param name="leftSideVersion">The left side version.</param>
+    /// <param name="rightSideVersion">The right side version.</param>
+    /// <returns></returns>
     public int Compare([AllowNull] string leftSideVersion, [AllowNull] string rightSideVersion)
     {
         return CompareVersions(leftSideVersion, rightSideVersion);
     }
 
+    /// <summary>
+    /// Compares the specified left side version.
+    /// </summary>
+    /// <param name="leftSideVersion">The left side version.</param>
+    /// <param name="rightSideVersion">The right side version.</param>
+    /// <returns></returns>
     public int Compare([AllowNull] TVersion leftSideVersion, [AllowNull] TVersion rightSideVersion)
     {
         if (leftSideVersion == null) return -1;
@@ -23,6 +33,17 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
         return leftSideVersion.CompareTo(rightSideVersion);
     }
 
+    /// <summary>
+    /// Compares the specified left side version.
+    /// </summary>
+    /// <param name="leftSideVersion">The left side version.</param>
+    /// <param name="rightSideVersion">The right side version.</param>
+    /// <returns></returns>
+    /// <exception cref="System.ArgumentException">
+    /// leftSideVersion - Argument must be of type 'Version'.
+    /// or
+    /// rightSideVersion - Argument must be of type 'Version'.
+    /// </exception>
     public int Compare([AllowNull] object leftSideVersion, [AllowNull] object rightSideVersion)
     {
         if (leftSideVersion == null) return -1;
@@ -52,7 +73,7 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     public int CompareVersions(string leftSideVersion, string rightSideVersion)
     {
 
-        // given rightSideVersion verison numbers e.g. 2.5.1 and 2.4.1.6,
+        // given rightSideVersion version numbers e.g. 2.5.1 and 2.4.1.6,
         // compare them, return 0 if equal, return -1 if a > b, and 1 if a < b
 
         // Insert your code here
@@ -72,13 +93,33 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
         return Compare(leftSideSegments, rightSideSegments);
     }
 
+    /// <summary>
+    /// Compares the versions.
+    /// </summary>
+    /// <param name="leftSideVersion">The left side version.</param>
+    /// <param name="rightSideVersion">The right side version.</param>
+    /// <returns></returns>
     public int CompareVersions(TVersion leftSideVersion, TVersion rightSideVersion)
     {
         return Compare(leftSideVersion, rightSideVersion);
     }
 
+
+
+    /// <summary>
+    /// Equals the specified left side version.
+    /// </summary>
+    /// <param name="leftSideVersion">The left side version.</param>
+    /// <param name="rightSideVersion">The right side version.</param>
+    /// <returns></returns>
     public bool Equals(TVersion? leftSideVersion, TVersion? rightSideVersion) => leftSideVersion.Equals(rightSideVersion);
 
+    /// <summary>
+    /// Equals the specified left side version.
+    /// </summary>
+    /// <param name="leftSideVersion">The left side version.</param>
+    /// <param name="rightSideVersion">The right side version.</param>
+    /// <returns></returns>
     public new bool Equals(object? leftSideVersion, object? rightSideVersion)
     {
         if (leftSideVersion is not Version version1)
@@ -93,6 +134,14 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
         return version1.Equals(version2);
     }
 
+    /// <summary>
+    /// Returns a hash code for this instance.
+    /// </summary>
+    /// <param name="obj">The object.</param>
+    /// <returns>
+    /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
+    /// </returns>
+    /// <exception cref="System.ArgumentNullException">obj</exception>
     public int GetHashCode([DisallowNull] TVersion obj)
     {
         if (obj is null)
@@ -103,6 +152,14 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
         return obj.GetHashCode();
     }
 
+    /// <summary>
+    /// Returns a hash code for this instance.
+    /// </summary>
+    /// <param name="obj">The object.</param>
+    /// <returns>
+    /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
+    /// </returns>
+    /// <exception cref="System.ArgumentNullException">obj</exception>
     public int GetHashCode(object obj)
     {
         if (obj is null)
@@ -112,22 +169,4 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
 
         return obj?.GetHashCode() ?? GetHashCode();
     }
-
-    //private (Version version1, Version version2) checkVersionParameters(object leftSideVersion, object rightSideVersion)
-    //{
-    //    string parameterTypeError = $"Argument {1} is not of type {typeof(Version).ToString()}";
-    //    string parameterNullError = $"Argument {1} is null";
-
-    //    if (leftSideVersion is not Version version1)
-    //    {
-    //        throw new ArgumentException(string.Format(parameterTypeError, rightSideVersion), nameof(rightSideVersion));
-    //    }
-    //    if (rightSideVersion is not Version version2)
-    //    {
-    //        throw new ArgumentException(string.Format(parameterTypeError, leftSideVersion), nameof(leftSideVersion));
-    //    }
-    //    if (leftSideVersion == null || rightSideVersion == null) throw new ArgumentNullException(string.Format(parameterNullError));
-
-    //    return (version1, version2);
-    //}
 }
