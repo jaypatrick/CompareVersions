@@ -2,14 +2,42 @@
 
 namespace CompareVersions;
 
+/// <summary>
+///  Sets up object container and service lifetimes
+/// </summary>
+/// <typeparam name="T"></typeparam>
 public class Harness<T> where T : UI.Version
 {
     private readonly int floor = Constants.VersionSegmentFloor;
     private readonly int ceiling = Constants.VersionSegmentCeiling;
 
+    /// <summary>
+    /// Gets the comparison operations.
+    /// </summary>
+    /// <value>
+    /// The comparison operations.
+    /// </value>
     public required IComparisonOperations<T> ComparisonOperations { get; init; }
+
+    /// <summary>
+    /// Gets or sets the service provider.
+    /// </summary>
+    /// <value>
+    /// The service provider.
+    /// </value>
     public required IServiceProvider serviceProvider { get; set; }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Harness{T}"/> class.
+    /// </summary>
+    /// <param name="comparisonOperations">The comparison operations.</param>
+    /// <param name="messageWriters">The message writers.</param>
+    /// <param name="serviceProvider">The service provider.</param>
+    /// <exception cref="ArgumentNullException">
+    /// nameof(comparisonOperations)
+    /// or
+    /// nameof(serviceProvider)
+    /// </exception>
     [SetsRequiredMembers]
     public Harness(IComparisonOperations<T> comparisonOperations,
         IEnumerable<IMessageWriter> messageWriters,
@@ -28,6 +56,11 @@ public class Harness<T> where T : UI.Version
         this.serviceProvider = serviceProvider;
     }
 
+    /// <summary>
+    /// Runs the asynchronous.
+    /// </summary>
+    /// <param name="args">The arguments.</param>
+    /// <returns></returns>
     public async Task RunAsync(IList<string> args)
     {
         var writer = this.serviceProvider.GetRequiredService<IMessageWriter>();
@@ -78,10 +111,10 @@ public class Harness<T> where T : UI.Version
 
         void writeToConsole_1()
         {
-            string isLessThan = "is less than";
-            string isGreaterThan = "is greater than";
-            string isEqualTo = "is equal to";
-            string theResultWas = "The result was";
+            string isLessThan = Constants.IsLessThan;
+            string isGreaterThan = Constants.IsGreaterThan;
+            string isEqualTo = Constants.IsEqualTo;
+            string theResultWas = Constants.TheResultWas;
 
             if (result < 0) writer.Write($"{version1} {isLessThan} {version2}: {theResultWas} {result}");
             if (result == 0) writer.Write($"{version1} {isEqualTo} {version2}: {theResultWas} {result}");
@@ -116,7 +149,6 @@ public class Harness<T> where T : UI.Version
 
         for (int i = 1; i <= maxSegments; i++)
         {
-
             var quad = RandomNumberGenerator.GetInt32(floor, ceiling);
 
             versionString.Append(quad);

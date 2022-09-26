@@ -41,8 +41,45 @@ public static class Constants
         get { return 100; }
     }
 
+    /// <summary>
+    /// Gets the maximum number of segments.
+    /// </summary>
+    /// <value>
+    /// The maximum number of segments.
+    /// </value>
     public static int MaxNumberOfSegments
     {
         get { return 4; }
     }
+    /// <summary>
+    /// Gets the is less than.
+    /// </summary>
+    /// <value>
+    /// The is less than.
+    /// </value>
+    public static string IsLessThan => "is less than";
+
+    /// <summary>
+    /// Gets the is greater than.
+    /// </summary>
+    /// <value>
+    /// The is greater than.
+    /// </value>
+    public static string IsGreaterThan => "is greater than";
+
+    /// <summary>
+    /// Gets the is equal to.
+    /// </summary>
+    /// <value>
+    /// The is equal to.
+    /// </value>
+    public static string IsEqualTo => "is equal to";
+
+    /// <summary>
+    /// Gets the result was.
+    /// </summary>
+    /// <value>
+    /// The result was.
+    /// </value>
+    public static string TheResultWas => "The result was";
 }
