@@ -9,6 +9,7 @@ namespace CompareVersions.UI;
 /// <seealso cref="System.IEquatable{CompareVersions.UI.Version}
 /// <seealso cref="System.IComparable" />
 [TypeConverter(typeof(VersionConverter))]
+[Serializable()]
 public class Version : IComparable<Version>, IEquatable<Version>, IComparable, System.ICloneable
 {
     private static readonly string tooManySegments = "Version string can only have at most 4 segments.";
@@ -40,9 +41,18 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     /// <returns></returns>
     public Segment this[SegmentType segmentType]
     {
-        get { return this.GetSegment(segmentType); }
+        get { return this.Segments[(int)segmentType]; }
         set { this.Segments[(int)segmentType] = value; }
     }
+
+    /// <summary>
+    ///     Represents an uninitialized <see cref="Version"/> instance
+    /// </summary>
+    /// <remarks>
+    ///     This initializes all <see cref="Segment"/>values to 0 (zero)
+    /// </remarks>
+    [SetsRequiredMembers]
+    public Version() : this(0, 0, 0, 0) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Version"/> class.
@@ -126,6 +136,26 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
     { }
 
     /// <summary>
+    /// Initilizes a new instance of the <see cref="Version"/>class
+    /// </summary>
+    /// <param name="parts">All parts more than 4 in length are discardes and ignored</param>
+    [SetsRequiredMembers()]
+    public Version(params int[] parts)
+    {
+        if (parts.Length > 4) throw new ArgumentOutOfRangeException(tooManySegments);
+        var segments = new List<Segment>(parts.Length);
+
+        for (int i = 0; i < parts.Length; i++)
+        {
+            segments.Add(new((SegmentType)(i), parts[i]));
+
+            //this[i] = new Segment((SegmentType)(i), parts[i]);
+            //if (i > 4) return;
+        }
+        this.Segments = segments;
+    }
+
+    /// <summary>
     ///     Initializes a new instance of the <see cref="Version"/> class.
     /// </summary>
     /// <param name="segments">The segments.</param>
@@ -160,6 +190,14 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, S
         this.MinorSegment = segments[1];
         this.PatchSegment = segments[2] ?? Segment.Default;
         this.BuildSegment = segments[3] ?? Segment.Default;
+    }
+
+    /// <summary>
+    /// Returns a default instance of the <see cref="Version"/> object
+    /// </summary>
+    public static Version Default
+    {
+        get => new();
     }
 
     /// <summary>

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Version = CompareVersions.UI.Version;
+﻿using Version = CompareVersions.UI.Version;
 
 namespace CompareVersions;
 
@@ -7,7 +6,8 @@ namespace CompareVersions;
 ///  Sets up object container and service lifetimes
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public class Harness<T> where T : UI.Version
+public class Harness<T>
+    where T : UI.Version
 {
     /// <summary>
     /// Gets the comparison operations.
@@ -23,7 +23,31 @@ public class Harness<T> where T : UI.Version
     /// <value>
     /// The service provider.
     /// </value>
-    public required IServiceProvider serviceProvider { get; set; }
+    public required IServiceProvider ServiceProvider { get; init; }
+
+    /// <summary>
+    /// Gets or sets the message writers.
+    /// </summary>
+    /// <value>
+    /// The message writers.
+    /// </value>
+    public required IEnumerable<IMessageWriter> MessageWriters { get; set; }
+
+    /// <summary>
+    /// Gets the command line.
+    /// </summary>
+    /// <value>
+    /// The command line.
+    /// </value>
+    public required ICommandLine CommandLine { get; init; }
+
+    /// <summary>
+    /// Gets the active console.
+    /// </summary>
+    /// <value>
+    /// The active console.
+    /// </value>
+    public IConsole StandardConsole { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Harness{T}"/> class.
@@ -39,46 +63,54 @@ public class Harness<T> where T : UI.Version
     [SetsRequiredMembers]
     public Harness(IComparisonOperations<T> comparisonOperations,
         IEnumerable<IMessageWriter> messageWriters,
-        IServiceProvider serviceProvider)
+        IServiceProvider serviceProvider,
+        ICommandLine commandLine,
+        IConsole standardConsole)
     {
-        if (comparisonOperations is null)
-        {
-            throw new ArgumentNullException(nameof(comparisonOperations));
-        }
-        if (serviceProvider == null)
-        {
-            throw new ArgumentNullException(nameof(serviceProvider));
-        }
+        if (comparisonOperations is null) throw new ArgumentNullException(nameof(comparisonOperations));
+        if (serviceProvider is null) throw new ArgumentNullException(nameof(serviceProvider));
+        if (messageWriters is null) throw new ArgumentNullException(nameof(messageWriters));
+        if (commandLine is null) throw new ArgumentNullException(nameof(commandLine));
+        if (standardConsole is null) throw new ArgumentNullException(nameof(StandardConsole));
 
         this.ComparisonOperations = comparisonOperations;
-        this.serviceProvider = serviceProvider;
+        this.ServiceProvider = serviceProvider;
+        this.MessageWriters = messageWriters;
+        this.CommandLine = commandLine;
+        this.StandardConsole = StandardConsole;
     }
 
     /// <summary>
     /// Runs the asynchronous.
     /// </summary>
     /// <param name="args">The arguments.</param>
-    /// <returns></returns>
-    public async Task RunAsync(IList<string> args)
+    /// <returns>A <see cref="System.Int64"/>representing the result of the compare operation. -1 means the left side was greater, 0 means they are equal, and 1 means the right side is larger</returns>
+    public async Task<int> RunAsync(IList<string> args)
     {
-        var writer = this.serviceProvider.GetRequiredService<IMessageWriter>();
+        // standard console, TODO: need to also set up logging writer
+        var writer = this.StandardConsole;
         char separator = Constants.VersionSeparators[0];
 
-        writer.Write($"Hello World from writer of type {writer.GetType()}");
+        var rootCommand = new RootCommand("This is the root command. ");
+        rootCommand.Description = "A simple app to compare version strings.";
+        rootCommand.AddOption(this.CommandLine.VersionsOption);
 
-        writer.Write("Hello, World!");
+        // TODO: Finish settting up binder and validation
+        rootCommand.SetHandler((versionOptions) =>
+            versionOptions.Console = this.StandardConsole
+        );
+
         string version1 = args.Count > 0 ? args[0] : string.Empty;
         string version2 = args.Count > 0 ? args[1] : string.Empty;
 
         string inputVersion = "Input version string in <xx>.<xx>.<xx>.<xx> format";
 
-        writer.Write("Welcome to CompareVersions. Would you like random version strings? y/n ");
-        string createRandomVersion = Console.ReadLine();
+        string createRandomVersion = Console.ReadLine() ?? "n";
 
         if (createRandomVersion == "y" || createRandomVersion == "Y")
         {
             writer.Write("Would you like to use equal version strings? y/n ");
-            string useEqual = Console.ReadLine();
+            string useEqual = Console.ReadLine() ?? "n";
 
             if (useEqual == "y" || useEqual == "Y")
             {
@@ -96,10 +128,10 @@ public class Harness<T> where T : UI.Version
         else
         {
             writer.Write(inputVersion);
-            version1 = Console.ReadLine();
+            version1 = Console.ReadLine() ?? Version.CreateRandom(separator).ToString();
 
             writer.Write(inputVersion);
-            version2 = Console.ReadLine();
+            version2 = Console.ReadLine() ?? Version.CreateRandom(separator).ToString();
         }
 
         writer.Write($"The version strings are {version1} and {version2}");
@@ -121,7 +153,7 @@ public class Harness<T> where T : UI.Version
         }
 
         writer.Write("Have another go? y/n");
-        string again = Console.ReadLine();
+        string again = Console.ReadLine() ?? "n";
 
         if (again != "N" || again != "n")
         {
@@ -134,5 +166,11 @@ public class Harness<T> where T : UI.Version
         }
 
         Console.ReadLine();
+        return result;
+    }
+    public static void DisplayConsoleOptions(int delayOptionValue, string messageOptionValue)
+    {
+        Console.WriteLine($"--delay = {delayOptionValue}");
+        Console.WriteLine($"--message = {messageOptionValue}");
     }
 }

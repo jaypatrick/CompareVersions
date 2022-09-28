@@ -2,9 +2,16 @@
 
 public class ConsoleWriter : IMessageWriter
 {
+    private IConsole _standardConsole { get; }
+
+    public ConsoleWriter(IConsole standardConsole)
+    {
+        _standardConsole = standardConsole;
+    }
+
     public void Write(string message)
     {
-        Console.WriteLine($"MessageWriter.Write(message: \"{message}\")");
+        this._standardConsole.WriteLine($"MessageWriter.Write(message: \"{message}\")");
     }
 
     /// <summary>

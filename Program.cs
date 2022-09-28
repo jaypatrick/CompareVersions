@@ -1,24 +1,26 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using CompareVersions;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+using Version = CompareVersions.UI.Version;
 
-System.AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
+
+AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
 
 using IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((_, services) =>
         services
-            .AddScoped<IComparisonOperations<CompareVersions.UI.Version>, VersionComparer<CompareVersions.UI.Version>>()
+            .AddScoped<IComparisonOperations<Version>, VersionComparer<Version>>()
             .AddHostedService<Worker>()
             .AddSingleton<IMessageWriter, ConsoleWriter>()
             .AddSingleton<IMessageWriter, LoggingWriter>()
-            .AddScoped<Harness<CompareVersions.UI.Version>>())
+            .AddSingleton<ICommandLine, CommandLineOptions>()
+            .AddSingleton<IConsole, SystemConsole>()
+            .AddScoped<Harness<Version>>())
     .Build();
 
 
 try
 {
-    var harness = host.Services.GetRequiredService<Harness<CompareVersions.UI.Version>>();
+    var harness = host.Services.GetRequiredService<Harness<Version>>();
     await harness.RunAsync(args);
 
     //harness.Run(args, host.Services);
