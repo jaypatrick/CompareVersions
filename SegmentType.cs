@@ -1,4 +1,6 @@
-﻿namespace CompareVersions.UI;
+﻿using CompareVersions.Models;
+
+namespace CompareVersions.UI;
 
 /// <summary>
 ///     Enum representing segments types for the <see cref="Version" /> object

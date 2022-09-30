@@ -1,4 +1,4 @@
-﻿using Version = CompareVersions.UI.Version;
+﻿using Version = CompareVersions.Models.Version;
 
 namespace CompareVersions.Infrastructure;
 
@@ -8,14 +8,14 @@ namespace CompareVersions.Infrastructure;
 /// <seealso cref="CompareVersions.Infrastructure.ICommandLine" />
 public class CommandLineOptions : ICommandLine
 {
-    private readonly char separator = Constants.VersionSeparators[0];
-    private readonly IConsole _console;
+    private readonly char _separator = Constants.VersionSeparators[0];
+    private readonly IMessageWriter _console;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="CommandLineOptions"/> class.
     /// </summary>
     /// <param name="console">The console.</param>
-    public CommandLineOptions(IConsole console)
+    public CommandLineOptions(IMessageWriter console)
     {
         this._console = console;
     }
@@ -56,8 +56,8 @@ public class CommandLineOptions : ICommandLine
 
             if (result.Tokens.Count == 0)
             {
-                versions.Add(Version.CreateRandom(separator));
-                versions.Add(Version.CreateRandom(separator));
+                versions.Add(Version.CreateRandom(_separator));
+                versions.Add(Version.CreateRandom(_separator));
             }
             else if (int.TryParse(result.Tokens.Single().Value, out int count))
             {
@@ -88,7 +88,7 @@ public class CommandLineOptions : ICommandLine
         {
             result.OnlyTake(2);
 
-            var version1 = new Version(result.Tokens.First().Value, separator);
+            var version1 = new Version(result.Tokens[0].Value, _separator);
             return version1;
         })
     {

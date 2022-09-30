@@ -1,4 +1,6 @@
-﻿namespace CompareVersions.UI;
+﻿using Version = CompareVersions.Models.Version;
+
+namespace CompareVersions.UI;
 
 /// <summary>
 ///     Class for converting <see cref="Version"/> instances to other types.

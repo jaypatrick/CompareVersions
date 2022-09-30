@@ -1,5 +1,6 @@
 ﻿using System.CommandLine.Binding;
-using Version = CompareVersions.UI.Version;
+using CompareVersions.Models;
+using Version = CompareVersions.Models.Version;
 
 namespace CompareVersions.Infrastructure
 {

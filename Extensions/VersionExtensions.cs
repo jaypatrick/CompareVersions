@@ -1,4 +1,4 @@
-﻿using Version = CompareVersions.UI.Version;
+﻿using Version = CompareVersions.Models.Version;
 
 namespace CompareVersions.Extensions;
 

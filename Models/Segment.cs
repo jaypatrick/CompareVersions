@@ -1,11 +1,12 @@
-﻿namespace CompareVersions.UI;
+﻿namespace CompareVersions.Models;
 
 /// <summary>
 ///     Class that represents a single segment of <see cref="Version"/> object
 /// </summary>
-/// <seealso cref="System.IComparable<CompareVersions.UI.Segment>" />
-/// <seealso cref="System.IEquatable<CompareVersions.UI.Segment>" />
-/// <seealso cref="System.IComparable" />
+/// <seealso cref="IComparable{UI.Segment}" />
+/// <seealso cref="System.IEquatable{CompareVersions.UI.Segment}" />
+/// <seealso cref="IComparable" />
+[Serializable()]
 public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
 {
     /// <summary>
@@ -13,7 +14,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// </summary>
     /// <param name="segmentType">The SegmentType<see cref="SegmentType"/></param>
     /// <param name="value">The value.</param>
-    /// <exception cref="System.ArgumentOutOfRangeException">Segment cannot be greater than 100, per spec</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Segment cannot be greater than 100, per spec</exception>
     [SetsRequiredMembers()]
     public Segment(SegmentType segmentType, int value = 0)
     {
@@ -29,7 +30,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// <returns></returns>
     public (SegmentType segmentType, int value) GetSegment()
     {
-        return (this.SegmentType, this.Value);
+        return (SegmentType, Value);
     }
 
     /// <summary>
@@ -59,13 +60,13 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// A value that indicates the relative order of the objects being compared. The return value has these meanings:
     /// <list type="table"><listheader><term> Value</term><description> Meaning</description></listheader><item><term> Less than zero</term><description> This instance precedes <paramref name="obj" /> in the sort order.</description></item><item><term> Zero</term><description> This instance occurs in the same position in the sort order as <paramref name="obj" />.</description></item><item><term> Greater than zero</term><description> This instance follows <paramref name="obj" /> in the sort order.</description></item></list>
     /// </returns>
-    /// <exception cref="System.ArgumentException">Object is not a Segment</exception>
+    /// <exception cref="ArgumentException">Object is not a Segment</exception>
     public int CompareTo([AllowNull] object obj)
     {
         if (obj == null) return 1;
 
         if (obj is Segment otherSegment)
-            return this.Value.CompareTo(otherSegment.Value);
+            return Value.CompareTo(otherSegment.Value);
         else
             throw new ArgumentException("Object is not a Segment");
     }
@@ -80,7 +81,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     public int CompareTo([AllowNull] Segment other)
     {
         if (other == null) return 1;
-        return this.Value.CompareTo(other.Value);
+        return Value.CompareTo(other.Value);
     }
     /// <summary>
     /// Indicates whether the current object is equal to another object of the same type.
@@ -94,17 +95,17 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
         if (other == null)
             return false;
 
-        if (this.Value == other.Value)
+        if (Value == other.Value)
             return true;
         else
             return false;
     }
     /// <summary>
-    /// Determines whether the specified <see cref="System.Object" />, is equal to this instance.
+    /// Determines whether the specified <see cref="object" />, is equal to this instance.
     /// </summary>
-    /// <param name="obj">The <see cref="System.Object" /> to compare with this instance.</param>
+    /// <param name="obj">The <see cref="object" /> to compare with this instance.</param>
     /// <returns>
-    ///   <c>true</c> if the specified <see cref="System.Object" /> is equal to this instance; otherwise, <c>false</c>.
+    ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
     /// </returns>
     public override bool Equals([AllowNull] object obj)
     {
@@ -125,7 +126,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// </returns>
     public override int GetHashCode()
     {
-        return this.Value.GetHashCode();
+        return Value.GetHashCode();
     }
     /// <summary>
     /// Implements the operator ==.
@@ -137,8 +138,8 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// </returns>
     public static bool operator ==(Segment segment1, Segment segment2)
     {
-        if (((object)segment1) == null || ((object)segment2) == null)
-            return Object.Equals(segment1, segment2);
+        if ((object)segment1 == null || (object)segment2 == null)
+            return Equals(segment1, segment2);
 
         return segment1.Equals(segment2);
     }
@@ -152,10 +153,10 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// </returns>
     public static bool operator !=(Segment segment1, Segment segment2)
     {
-        if (((object)segment1) == null || ((object)segment2) == null)
-            return !Object.Equals(segment1, segment2);
+        if ((object)segment1 == null || (object)segment2 == null)
+            return !Equals(segment1, segment2);
 
-        return !(segment1.Equals(segment2));
+        return !segment1.Equals(segment2);
     }
 
     /// <summary>
@@ -213,10 +214,10 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// Converts to string.
     /// </summary>
     /// <returns>
-    /// A <see cref="System.String" /> that represents this instance.
+    /// A <see cref="string" /> that represents this instance.
     /// </returns>
     public override string ToString()
     {
-        return this.Value.ToString();
+        return Value.ToString();
     }
 }

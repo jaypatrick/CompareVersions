@@ -1,4 +1,6 @@
-﻿namespace CompareVersions.UI;
+﻿using Version = CompareVersions.Models.Version;
+
+namespace CompareVersions.UI;
 
 /// <summary>
 /// Class containing operations that compare version strings
@@ -144,7 +146,7 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     /// <exception cref="System.ArgumentNullException">obj</exception>
     public int GetHashCode([DisallowNull] TVersion obj)
     {
-        if (obj is null)
+        if (obj == null)
         {
             throw new ArgumentNullException(nameof(obj));
         }
@@ -162,7 +164,7 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     /// <exception cref="System.ArgumentNullException">obj</exception>
     public int GetHashCode(object obj)
     {
-        if (obj is null)
+        if (obj == null)
         {
             throw new ArgumentNullException(nameof(obj));
         }
