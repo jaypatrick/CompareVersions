@@ -39,8 +39,8 @@ public class CommandLineOptions : ICommandLine
     /// </value>
     public Option<Verbosity> VerbosityOption => new(
         aliases: new[] { "--verbosity", "-v" },
-        description: "The verbosity of the output",
-        getDefaultValue: () => Verbosity.Quiet);
+        getDefaultValue: () => Verbosity.Quiet,
+        description: "The verbosity of the output");
 
     /// <summary>
     /// Gets the versions supplied on the command line.
@@ -49,7 +49,10 @@ public class CommandLineOptions : ICommandLine
     /// The version1.
     /// </value>
     public Option<IList<Version>> VersionsOption => new(
-        aliases: new[] { "--version-strings", "-vs" },
+        aliases: new[]
+        {
+            "--version-strings", "-vs"
+        },
         parseArgument: result =>
         {
             var versions = new List<Version>();
@@ -82,6 +85,13 @@ public class CommandLineOptions : ICommandLine
         Description = "The version strings to compare. "
     };
 
+
+    /// <summary>
+    /// Gets the version string option.
+    /// </summary>
+    /// <value>
+    /// The version string option.
+    /// </value>
     public Option<Version> VersionStringOption => new(
         aliases: new[] { "--version", "-v" },
         parseArgument: result =>
@@ -101,22 +111,33 @@ public class CommandLineOptions : ICommandLine
     /// </summary>
     public Argument<bool> UseEqualVersions = new(
         name: "equals",
-        description: "Use equal version strings. ",
-        getDefaultValue: () => true);
+        getDefaultValue: () => true,
+        description: "Use equal version strings. ");
     /// <summary>
     /// The use default value
     /// </summary>
     public Argument<bool> UseDefaultVersion = new(
         name: "default",
-        description: "Provide default values. ",
-        getDefaultValue: () => true);
+        getDefaultValue: () => true,
+        description: "Provide default values. ");
 }
 /// <summary>
 /// Verbosity level for console output and logging
 /// </summary>
 public enum Verbosity
 {
+    /// <summary>
+    /// Silently log
+    /// </summary>
     Quiet,
+
+    /// <summary>
+    /// The normal
+    /// </summary>
     Normal,
+
+    /// <summary>
+    /// The detailed
+    /// </summary>
     Detailed
 }

@@ -6,8 +6,8 @@ namespace CompareVersions.Interfaces;
 ///     Interface that does comparison operations on for <see cref="Version"/>version strings
 /// </summary>
 /// <typeparam name="T"></typeparam>
-/// <seealso cref="System.Collections.Generic.IComparer&lt;T&gt;" />
-/// <seealso cref="System.Collections.Generic.IEqualityComparer&lt;T&gt;" />
+/// <seealso cref="System.Collections.Generic.IComparer{T}" />
+/// <seealso cref="System.Collections.Generic.IEqualityComparer{T}" />
 /// <seealso cref="System.Collections.IComparer" />
 /// <seealso cref="System.Collections.IEqualityComparer" />
 public interface IComparisonOperations<T>
