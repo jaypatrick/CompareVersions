@@ -134,9 +134,9 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
     { }
 
     /// <summary>
-    /// Initilizes a new instance of the <see cref="Version"/>class
+    /// Initializes a new instance of the <see cref="Version"/>class
     /// </summary>
-    /// <param name="parts">All parts more than 4 in length are discardes and ignored</param>
+    /// <param name="parts">All parts more than 4 in length are discards and ignored</param>
     [SetsRequiredMembers()]
     public Version(params int[] parts)
     {
@@ -202,9 +202,12 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
     /// Creates a random Version object
     /// </summary>
     /// <param name="separator"></param>
+    /// <param name="numberOfSegments"></param>
     /// <returns>A fully constructed <see cref="Version"/> object for consumption.</returns>
-    public static Version CreateRandom(char separator, int numberOfSegments = 4) // => new Version().CreateRandom(_separator ?? _separator);
+    public static Version CreateRandom(char? separator, int numberOfSegments = 4) // => new Version().CreateRandom(_separator ?? _separator);
     {
+        _ = separator ?? Constants.VersionSeparators[0];
+
         if (numberOfSegments > Constants.MaxNumberOfSegments)
             throw new ArgumentOutOfRangeException(nameof(numberOfSegments), $"Too many segments specified: {numberOfSegments} supplied, {Constants.MaxNumberOfSegments} is max accepted.");
         if (numberOfSegments <= 0)
@@ -227,6 +230,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
     /// Adds the segment.
     /// </summary>
     /// <param name="segment">The segment.</param>
+    /// <param name="replaceIfFound"></param>
     public bool AddSegment(Segment segment, bool replaceIfFound)
     {
         if (!Segments.Contains(segment))
@@ -381,7 +385,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
     /// <returns>A <see cref="string"/>string representation of this object, e.g major.minor.patch.build</returns>
     public override string ToString()
     {
-        StringBuilder segments = new StringBuilder();
+        StringBuilder segments = new();
         foreach (var segment in Segments)
         {
             segments.Append(segment);

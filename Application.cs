@@ -69,17 +69,16 @@ public class Application<T>
         ICommandLine commandLine,
         IMessageWriter consoleWriter)
     {
-        if (comparisonOperations is null) throw new ArgumentNullException(nameof(comparisonOperations));
-        if (serviceProvider is null) throw new ArgumentNullException(nameof(serviceProvider));
-        if (messageWriters is null) throw new ArgumentNullException(nameof(messageWriters));
-        if (commandLine is null) throw new ArgumentNullException(nameof(commandLine));
-        if (consoleWriter is null) throw new ArgumentNullException(nameof(consoleWriter));
-
-        this.ComparisonOperations = comparisonOperations;
-        this.ServiceProvider = serviceProvider;
-        this.MessageWriters = messageWriters;
-        this.CommandLine = commandLine;
-        this.ConsoleWriter = consoleWriter;
+        this.ComparisonOperations = comparisonOperations
+            ?? throw new ArgumentNullException(nameof(comparisonOperations));
+        this.ServiceProvider = serviceProvider
+            ?? throw new ArgumentNullException(nameof(serviceProvider));
+        this.MessageWriters = messageWriters
+            ?? throw new ArgumentNullException(nameof(messageWriters));
+        this.CommandLine = commandLine
+            ?? throw new ArgumentNullException(nameof(commandLine));
+        this.ConsoleWriter = consoleWriter
+            ?? throw new ArgumentNullException(nameof(consoleWriter));
     }
 
     /// <summary>
@@ -96,16 +95,16 @@ public class Application<T>
         // TODO: Finish setting up the command line options here
         var rootCommand = new RootCommand("This is the root command. ")
         {
-            Description = "A simple app to compare version strings."
+            Description = "A simple app to compare version strings.",
+            //rootCommand.AddOption(this.CommandLine.VersionsOption);
+
+            // TODO: Finish setting up binder and validation
+            //rootCommand.SetHandler((versionOptions) =>
+            //    versionOptions.Console = this.ConsoleWriter
+            //);
+
+            Handler = CommandHandler.Create<IMessageWriter>((writer) => HandleVersions(writer, args))
         }; //.WithHandler(nameof(HandleVersions));
-        //rootCommand.AddOption(this.CommandLine.VersionsOption);
-
-        // TODO: Finish setting up binder and validation
-        //rootCommand.SetHandler((versionOptions) =>
-        //    versionOptions.Console = this.ConsoleWriter
-        //);
-
-        rootCommand.Handler = CommandHandler.Create<IMessageWriter>((writer) => HandleVersions(writer, args));
 
         var result = await rootCommand.InvokeAsync(args.ToArray(), writer);
 
@@ -125,22 +124,6 @@ public class Application<T>
         //Console.ReadLine();
         writer.ReadLine();
         return result;
-    }
-
-    /// <summary>
-    /// Displays the console options.
-    /// </summary>
-    /// <param name="delayOptionValue">The delay option value.</param>
-    /// <param name="messageOptionValue">The message option value.</param>
-    /// <returns></returns>
-    public void DisplayConsoleOptions(int delayOptionValue, string messageOptionValue)
-    {
-        //Console.WriteLine($"--delay = {delayOptionValue}");
-        //Console.WriteLine($"--message = {messageOptionValue}");
-
-        var writer = this.ConsoleWriter;
-        writer.WriteLine($"--delay = {delayOptionValue}");
-        writer.WriteLine($"--message = {messageOptionValue}");
     }
 
     /// <summary>
