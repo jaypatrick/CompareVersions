@@ -1,14 +1,19 @@
 ﻿namespace CompareVersions.Models;
 
 /// <summary>
-///    Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment"/> objects
+/// Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment" /> objects
 /// </summary>
+/// <seealso cref="System.IComparable{T}" />
+/// <seealso cref="System.IEquatable{T}" />
+/// <seealso cref="System.IComparable" />
+/// <seealso cref="System.ICloneable" />
+/// <seealso cref="System.Numerics.IAdditionOperators{TSelf, TOther, TResult}" />
 /// <seealso cref="IComparable{Version}" />
 /// <seealso cref="IEquatable{Version}" />
 /// <seealso cref="IComparable" />
 [TypeConverter(typeof(UI.VersionConverter))]
 [Serializable()]
-public class Version : IComparable<Version>, IEquatable<Version>, IComparable, ICloneable
+public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Version>, IComparable, ICloneable, IAdditionOperators<Version, Version, Version>, IAdditiveIdentity<Version, Version>
 {
     private static readonly string _tooManySegments = "Version string can only have at most 4 segments.";
     private static readonly char _separator = Constants.VersionSeparators[0];
@@ -377,12 +382,15 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
         set { Segments[(int)SegmentType.Build] = value ?? Segment.Default; }
     }
 
+    /// <summary>Gets the additive identity of the current type.</summary>
+    public static Version AdditiveIdentity => Version.Default;
+
     /// <summary>
     /// Converts to string.
     /// </summary>
     /// <returns>
     /// A <see cref="string" /> that represents this instance.
-    /// <returns>A <see cref="string"/>string representation of this object, e.g major.minor.patch.build</returns>
+    /// </returns>
     public override string ToString()
     {
         StringBuilder segments = new();
@@ -441,7 +449,7 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
     /// <param name="value">An object to compare with this instance.</param>
     /// <returns>
     /// A value that indicates the relative order of the objects being compared. The return value has these meanings:
-    /// <list type="table"><listheader><term> Value</term><description> Meaning</description></listheader><item><term> Less than zero</term><description> This instance precedes <paramref name="value" /> in the sort order.</description></item><item><term> Zero</term><description> This instance occurs in the same position in the sort order as <paramref name="other" />.</description></item><item><term> Greater than zero</term><description> This instance follows <paramref name="other" /> in the sort order.</description></item></list>
+    /// <list type="table"><listheader><term> Value</term><description> Meaning</description></listheader><item><term> Less than zero</term><description> This instance precedes <paramref name="value" /> in the sort order.</description></item><item><term> Zero</term><description> This instance occurs in the same position in the sort order as <paramref name="value" />.</description></item><item><term> Greater than zero</term><description> This instance follows <paramref name="value" /> in the sort order.</description></item></list>
     /// </returns>
     public int CompareTo([AllowNull] Version value)
     {
@@ -599,6 +607,31 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
         return right <= left;
     }
 
+
+    /// <summary>Adds two values together to compute their sum.</summary>
+    /// <param name="left">The value to which <paramref name="right" /> is added.</param>
+    /// <param name="right">The value which is added to <paramref name="left" />.</param>
+    /// <returns>The sum of <paramref name="left" /> and <paramref name="right" />.</returns>
+    public static Version operator +(Version left, Version right)
+    {
+        Segment segment;
+        List<Segment> segments = new();
+
+        foreach (var s in left)
+        {
+            foreach (var r in right)
+            {
+                if (s.SegmentType == r.SegmentType)
+                {
+                    segment = s + r;
+                    segments.Add(segment);
+                }
+            }
+        }
+
+        return new Version(segments);
+    }
+
     /// <summary>
     /// Clones this instance.
     /// </summary>
@@ -623,4 +656,20 @@ public class Version : IComparable<Version>, IEquatable<Version>, IComparable, I
     {
         return Clone();
     }
+
+    /// <summary>Returns an enumerator that iterates through the collection.</summary>
+    /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+    public IEnumerator<Segment> GetEnumerator()
+    {
+        foreach (var segment in this.Segments)
+        {
+            yield return segment;
+        }
+    }
+
+    /// <summary>
+    /// Gets the non-generic enumerator, calls into generic version since <see cref="Segment"/> is known generic parameter type
+    /// </summary>
+    /// <returns>a <seealso cref="IEnumerable{Segment}"/></returns>
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }

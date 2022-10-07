@@ -3,11 +3,13 @@
 /// <summary>
 ///     Class that represents a single segment of <see cref="Version"/> object
 /// </summary>
-/// <seealso cref="IComparable{UI.Segment}" />
-/// <seealso cref="System.IEquatable{CompareVersions.UI.Segment}" />
+/// <seealso cref="IComparable{T}" />
+/// <seealso cref="System.IEquatable{T}" />
 /// <seealso cref="IComparable" />
+/// <seealso cref="IAdditionOperators{TSelf, TOther, TResult}"/>
+/// <seealso cref="IAdditiveIdentity{TSelf, TResult}"/>
 [Serializable()]
-public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
+public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, IAdditionOperators<Segment, Segment, Segment>, IAdditiveIdentity<Segment, Segment>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Segment"/> class.
@@ -44,7 +46,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// Defaults this instance.
     /// </summary>
     /// <returns></returns>
-    public static Segment Default => new Segment(0);
+    public static Segment Default => new(0);
     /// <summary>
     /// Gets or sets the type of the segment.
     /// </summary>
@@ -52,6 +54,15 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     /// The type of the segment.
     /// </value>
     public required SegmentType SegmentType { get; set; }
+
+    /// <summary>
+    /// Gets the additive identity.
+    /// </summary>
+    /// <value>
+    /// The additive identity.
+    /// </value>
+    public static Segment AdditiveIdentity => Segment.Default;
+
     /// <summary>
     /// Compares the current instance with another object of the same type and returns an integer that indicates whether the current instance precedes, follows, or occurs in the same position in the sort order as the other object.
     /// </summary>
@@ -210,6 +221,40 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     {
         return segment1.CompareTo(segment2) <= 0;
     }
+
+    /// <summary>
+    /// Implements the operator op_Addition.
+    /// </summary>
+    /// <param name="left">The left.</param>
+    /// <param name="right">The right.</param>
+    /// <returns>
+    /// The result of the operator.
+    /// </returns>
+    /// <exception cref="ArgumentException">$"Segment type of {nameof(left)} is {left.SegmentType} and does not match {nameof(right)} segment type which is {right.SegmentType}</exception>
+    public static Segment operator +(Segment left, Segment right)
+    {
+        if (left.SegmentType != right.SegmentType)
+            throw new ArgumentException($"Segment type of {nameof(left)} is {left.SegmentType} and does not match {nameof(right)} segment type which is {right.SegmentType}");
+
+        List<Segment> segments = new()
+        {
+            left,
+            right
+        };
+
+        //foreach (var s in segments)
+        //{
+        //    var inner = segments.Sum(s => s.Value);
+        //    yield return new List<Segment>()
+        //    {
+        //        new(s.SegmentType, inner)
+        //    };
+        //}
+
+        var result = segments.Sum(s => s.Value);
+        return new(left.SegmentType, result);
+    }
+
     /// <summary>
     /// Converts to string.
     /// </summary>

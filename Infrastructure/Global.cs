@@ -11,5 +11,6 @@ global using System.CommandLine.NamingConventionBinder;
 global using System.ComponentModel;
 global using System.Diagnostics.CodeAnalysis;
 global using System.Globalization;
+global using System.Numerics;
 global using System.Security.Cryptography;
 global using System.Text;
