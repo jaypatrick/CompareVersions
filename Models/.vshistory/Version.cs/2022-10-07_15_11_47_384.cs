@@ -3,8 +3,8 @@
 /// <summary>
 ///    Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment"/> objects
 /// </summary>
-/// <seealso cref="IComparable{Version}" />
-/// <seealso cref="IEquatable{Version}" />
+/// <seealso cref="IComparable{Version}>
+/// <seealso cref="IEquatable{Version}
 /// <seealso cref="IComparable" />
 [TypeConverter(typeof(UI.VersionConverter))]
 [Serializable()]

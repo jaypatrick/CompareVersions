@@ -18,7 +18,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
     [SetsRequiredMembers()]
     public Segment(SegmentType segmentType, int value = 0)
     {
-        if (value >= 100) throw new ArgumentOutOfRangeException(nameof(value), "Segment cannot be greater than 100, per spec");
+        if (value >= 100) throw new ArgumentOutOfRangeException("Segment cannot be greater than 100, per spec");
 
         SegmentType = segmentType;
         Value = value;
