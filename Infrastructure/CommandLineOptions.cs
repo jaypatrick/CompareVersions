@@ -56,11 +56,11 @@ public class CommandLineOptions : ICommandLine
         parseArgument: result =>
         {
             var versions = new List<Version>();
-
+            Func<int, int, int> random = new(Version.RandomInteger);
             if (result.Tokens.Count == 0)
             {
-                versions.Add(Version.CreateRandom(_separator));
-                versions.Add(Version.CreateRandom(_separator));
+                versions.Add(Version.CreateRandom(random, _separator));
+                versions.Add(Version.CreateRandom(random, _separator));
             }
             else if (int.TryParse(result.Tokens.Single().Value, out int count))
             {

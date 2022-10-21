@@ -74,12 +74,12 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, I
     /// <exception cref="ArgumentException">Object is not a Segment</exception>
     public int CompareTo([AllowNull] object obj)
     {
-        if (obj == null) return 1;
-
-        if (obj is Segment otherSegment)
-            return Value.CompareTo(otherSegment.Value);
-        else
-            throw new ArgumentException("Object is not a Segment");
+        return obj switch
+        {
+            null => 1,
+            Segment otherSegment => Value.CompareTo(otherSegment.Value),
+            _ => throw new ArgumentException("Object is not a Segment")
+        };
     }
     /// <summary>
     /// Compares the current instance with another object of the same type and returns an integer that indicates whether the current instance precedes, follows, or occurs in the same position in the sort order as the other object.
@@ -91,8 +91,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, I
     /// </returns>
     public int CompareTo([AllowNull] Segment other)
     {
-        if (other == null) return 1;
-        return Value.CompareTo(other.Value);
+        return other == null ? 1 : Value.CompareTo(other.Value);
     }
     /// <summary>
     /// Indicates whether the current object is equal to another object of the same type.
@@ -106,10 +105,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, I
         if (other == null)
             return false;
 
-        if (Value == other.Value)
-            return true;
-        else
-            return false;
+        return Value == other.Value;
     }
     /// <summary>
     /// Determines whether the specified <see cref="object" />, is equal to this instance.
@@ -124,10 +120,7 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, I
             return false;
 
         Segment segmentObj = obj as Segment;
-        if (segmentObj == null)
-            return false;
-        else
-            return Equals(segmentObj);
+        return segmentObj != null && Equals(segmentObj);
     }
     /// <summary>
     /// Returns a hash code for this instance.

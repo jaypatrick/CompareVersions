@@ -18,8 +18,7 @@ public class VersionConverter : TypeConverter
     /// </returns>
     public override bool CanConvertFrom([AllowNull] ITypeDescriptorContext context, Type sourceType)
     {
-        if (sourceType == typeof(Version)) return true;
-        else return base.CanConvertFrom(context, sourceType);
+        return sourceType == typeof(Version) || base.CanConvertFrom(context, sourceType);
     }
 
     /// <summary>
@@ -49,8 +48,6 @@ public class VersionConverter : TypeConverter
     {
         if (value is System.Version systemVersion)
         {
-            var localVersionString = systemVersion.ToString();
-
             var localVersion = new Version(systemVersion.Major, systemVersion.Minor, systemVersion.Build, systemVersion.Revision);
             return localVersion;
         }

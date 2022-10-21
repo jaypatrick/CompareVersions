@@ -7,18 +7,17 @@ namespace CompareVersions.Infrastructure;
 /// <summary>
 ///     Class that assists with parsing binding options from the commandline
 /// </summary>
-/// <seealso cref="System.CommandLine.Binding.BinderBase{CompareVersions.Models.Version};" />
+/// <seealso cref="Version" />
 public class VersionBinder : BinderBase<Version>
 {
-    private readonly Option<Segment> major;
-    private readonly Option<Segment> minor;
-    private readonly Option<Segment> patch;
-    private readonly Option<Segment> build;
+    private readonly Option<Segment> _major;
+    private readonly Option<Segment> _minor;
+    private readonly Option<Segment> _patch;
+    private readonly Option<Segment> _build;
 
-    private readonly Option<Version> version;
+    private readonly Option<Version> _version;
 
-    private readonly Option<IList<Version>> versions;
-    private readonly Option<IList<string>> versionStrings;
+    private readonly Option<IList<Version>> _versions;
 
     /// <summary>Initializes a new instance of the <see cref="VersionBinder" /> class.</summary>
     /// <param name="major">The major.</param>
@@ -27,10 +26,10 @@ public class VersionBinder : BinderBase<Version>
     /// <param name="build">The build.</param>
     public VersionBinder(Option<Segment> major, Option<Segment> minor, Option<Segment> patch, Option<Segment> build)
     {
-        this.major = major;
-        this.minor = minor;
-        this.patch = patch;
-        this.build = build;
+        this._major = major;
+        this._minor = minor;
+        this._patch = patch;
+        this._build = build;
     }
 
 
@@ -38,7 +37,7 @@ public class VersionBinder : BinderBase<Version>
     /// <param name="version">The version.</param>
     public VersionBinder(Option<Version> version)
     {
-        this.version = version;
+        this._version = version;
     }
 
 
@@ -50,15 +49,13 @@ public class VersionBinder : BinderBase<Version>
     /// </param>
     public VersionBinder(Option<IList<Version>> versions)
     {
-        this.versions = versions;
+        this._versions = versions;
     }
-
 
     /// <summary>Initializes a new instance of the <see cref="VersionBinder" /> class.</summary>
     /// <param name="versionStrings">The version strings.</param>
     public VersionBinder(Option<IList<string>> versionStrings)
     {
-        this.versionStrings = versionStrings;
     }
 
 
@@ -71,10 +68,10 @@ public class VersionBinder : BinderBase<Version>
         new()
         {
             // This is only needed if we parse out each SEGMENT from the commandline
-            MajorSegment = bindingContext.ParseResult.GetValueForOption(major),
-            MinorSegment = bindingContext.ParseResult.GetValueForOption(minor),
-            PatchSegment = bindingContext.ParseResult.GetValueForOption(patch),
-            BuildSegment = bindingContext.ParseResult.GetValueForOption(build)
+            MajorSegment = bindingContext.ParseResult.GetValueForOption(_major),
+            MinorSegment = bindingContext.ParseResult.GetValueForOption(_minor),
+            PatchSegment = bindingContext.ParseResult.GetValueForOption(_patch),
+            BuildSegment = bindingContext.ParseResult.GetValueForOption(_build)
 
         };
 }

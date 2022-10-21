@@ -36,7 +36,7 @@ public class ConsoleWriter : IMessageWriter
     /// <value>
     /// The error.
     /// </value>
-    public IStandardStreamWriter Error { get; }
+    public required IStandardStreamWriter Error { get; init; }
 
     /// <summary>
     /// Gets the out.
@@ -44,15 +44,18 @@ public class ConsoleWriter : IMessageWriter
     /// <value>
     /// The out.
     /// </value>
-    public IStandardStreamWriter Out { get; }
+    public required IStandardStreamWriter Out { get; init; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="ConsoleWriter"/> class.
     /// </summary>
     /// <param name="stdOut">The standard out.</param>
     /// <param name="stdError">The standard error.</param>
-    public ConsoleWriter(IStandardStreamWriter stdOut = null, IStandardStreamWriter stdError = null)
+    [SetsRequiredMembers]
+    public ConsoleWriter(IStandardStreamWriter stdOut, IStandardStreamWriter stdError)
     {
+        if (stdOut == null || stdError == null) throw new ArgumentNullException(nameof(stdOut));
+
         this.Out = stdOut ?? StandardStreamWriter.Create(Console.Out);
         this.Error = stdError ?? StandardStreamWriter.Create(Console.Error);
     }

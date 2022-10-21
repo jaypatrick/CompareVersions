@@ -47,7 +47,9 @@ public class Application<T>
     /// <value>
     /// The active console.
     /// </value>
-    public IMessageWriter ConsoleWriter { get; }
+    public IMessageWriter ConsoleWriter { get; init; }
+
+    private readonly IMessageWriter _writer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Application{T}"/> class.
@@ -77,7 +79,7 @@ public class Application<T>
             ?? throw new ArgumentNullException(nameof(messageWriters));
         this.CommandLine = commandLine
             ?? throw new ArgumentNullException(nameof(commandLine));
-        this.ConsoleWriter = consoleWriter
+        this.ConsoleWriter = _writer = consoleWriter
             ?? throw new ArgumentNullException(nameof(consoleWriter));
     }
 
@@ -89,31 +91,29 @@ public class Application<T>
     public async Task<int> RunAsync(IList<string> args)
     {
         // standard console, TODO: need to also set up logging writer
-        var writer = this.ConsoleWriter;
+        //var writer = this.ConsoleWriter;
+        var writer = _writer;
         char separator = Constants.VersionSeparators[0];
 
         // TODO: Finish setting up the command line options here
-        var rootCommand = new RootCommand("This is the root command. ")
-        {
-            Description = "A simple app to compare version strings.",
-            //rootCommand.AddOption(this.CommandLine.VersionsOption);
+        //var rootCommand = new RootCommand("This is the root command. ");
 
-            // TODO: Finish setting up binder and validation
-            //rootCommand.SetHandler((versionOptions) =>
-            //    versionOptions.Console = this.ConsoleWriter
-            //);
+        //rootCommand.Description = "A simple app to compare version strings.";
+        //rootCommand.AddOption(this.CommandLine.VersionsOption);
+        //rootCommand.SetHandler((versionOptions) => versionOptions.Console = this.ConsoleWriter);
+        //rootCommand.Handler = CommandHandler.Create<IMessageWriter>((writer) => HandleVersions(args));
 
-            Handler = CommandHandler.Create<IMessageWriter>((writer) => HandleVersions(writer, args))
-        }; //.WithHandler(nameof(HandleVersions));
+        //var result = await rootCommand.InvokeAsync(args.ToArray());
 
-        var result = await rootCommand.InvokeAsync(args.ToArray(), writer);
+        await HandleVersions(args);
 
-        writer.Write("Have another go? y/n");
+        writer.WriteLine("Have another go? y/n");
         string again = writer.ReadLine() ?? "n";
+        int result = 0;
 
         if (again != "N" || again != "n")
         {
-            writer.Write("Firing it up...");
+            writer.WriteLine("Firing it up...");
             result = await this.RunAsync(args);
         }
         else
@@ -129,147 +129,84 @@ public class Application<T>
     /// <summary>
     /// Handles the versions.
     /// </summary>
-    /// <param name="writer">The writer.</param>
     /// <param name="args">The arguments.</param>
-    /// <returns></returns>
-    public void HandleVersions(IMessageWriter writer, IList<string> args)
+    /// <returns>A <see cref="int"/> representing the return value.</returns>
+    public async Task<int> HandleVersions(IList<string> args)
     {
-        char separator = Constants.VersionSeparators[0];
-
-        string version1 = args.Count > 0 ? args[0] : string.Empty;
-        string version2 = args.Count > 0 ? args[1] : string.Empty;
-
-        string inputVersion = "Input version string in <xx>.<xx>.<xx>.<xx> format";
-
-        writer.Write($"Hello World from writer of type {writer.GetType()}");
-        writer.Write("Welcome to CompareVersions. Would you like random version strings? y/n ");
-
-        string createRandomVersion = writer.ReadLine() ?? "n";
-
-        if (createRandomVersion == "y" || createRandomVersion == "Y")
+        int result = 0;
+        await Task.Run(() =>
         {
-            writer.Write("Would you like to use equal version strings? y/n ");
-            string useEqual = Console.ReadLine() ?? "n";
+            char separator = Constants.VersionSeparators[0];
+            var writer = _writer;
 
-            if (useEqual == "y" || useEqual == "Y")
+            string version1 = args.Count > 0 ? args[0] : string.Empty;
+            string version2 = args.Count > 0 ? args[1] : string.Empty;
+
+            string inputVersion = "Input version string in <xx>.<xx>.<xx>.<xx> format";
+
+            writer.WriteLine($"Hello World from writer of type {writer.GetType()}");
+            writer.WriteLine("Welcome to CompareVersions. Would you like random version strings? y/n ");
+
+            string createRandomVersion = writer.ReadLine() ?? "n";
+            Func<int, int, int> randomizer = new(Version.RandomInteger);
+
+            if (createRandomVersion == "y" || createRandomVersion == "Y")
             {
-                version1 = version2 = Version.CreateRandom(separator).ToString();
+                writer.Write("Would you like to use equal version strings? y/n ");
+                string useEqual = Console.ReadLine() ?? "n";
+
+                if (useEqual == "y" || useEqual == "Y")
+                {
+                    version1 = version2 = Version.CreateRandom(randomizer, separator).ToString();
+                }
+                else
+                {
+                    version1 = Version.CreateRandom(randomizer, separator).ToString();
+                    version2 = Version.CreateRandom(randomizer, separator).ToString();
+                }
+
+                // TODO: Work on the TryFormat methods
+                // TODO: Work on TryParse methods
             }
             else
             {
-                version1 = Version.CreateRandom(separator).ToString();
-                version2 = Version.CreateRandom(separator).ToString();
+                writer.Write(inputVersion);
+                version1 = writer.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
+                // version1 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
+
+                writer.Write(inputVersion);
+                version2 = writer.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
+                // version2 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
             }
 
-            // TODO: Work on the TryFormat methods
-            // TODO: Work on TryParse methods
-        }
-        else
-        {
-            writer.Write(inputVersion);
-            version1 = writer.ReadLine() ?? Version.CreateRandom(separator).ToString();
-            // version1 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
+            writer.Write($"The version strings are {version1} and {version2}");
 
-            writer.Write(inputVersion);
-            version2 = writer.ReadLine() ?? Version.CreateRandom(separator).ToString();
-            // version2 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
-        }
+            //var result = comparisonOperations.CompareVersions(version1, version2);
+            result = this.ComparisonOperations.Compare(version1, version2);
+            WriteToConsole1();
 
-        writer.Write($"The version strings are {version1} and {version2}");
+            void WriteToConsole1()
+            {
+                string isLessThan = Constants.IsLessThan;
+                string isGreaterThan = Constants.IsGreaterThan;
+                string isEqualTo = Constants.IsEqualTo;
+                string theResultWas = Constants.TheResultWas;
 
-        //var result = comparisonOperations.CompareVersions(version1, version2);
-        var result = this.ComparisonOperations.Compare(version1, version2);
-        writeToConsole_1();
-
-        void writeToConsole_1()
-        {
-            string isLessThan = Constants.IsLessThan;
-            string isGreaterThan = Constants.IsGreaterThan;
-            string isEqualTo = Constants.IsEqualTo;
-            string theResultWas = Constants.TheResultWas;
-
-            if (result < 0) writer.Write($"{version1} {isLessThan} {version2}: {theResultWas} {result}");
-            if (result == 0) writer.Write($"{version1} {isEqualTo} {version2}: {theResultWas} {result}");
-            if (result > 0) writer.Write($"{version1} {isGreaterThan} {version2}: {theResultWas} {result}");
-        }
+                switch (result)
+                {
+                    case < 0:
+                        writer.Write($"{version1} {isLessThan} {version2}: {theResultWas} {result}");
+                        break;
+                    case 0:
+                        writer.Write($"{version1} {isEqualTo} {version2}: {theResultWas} {result}");
+                        break;
+                    case > 0:
+                        writer.Write($"{version1} {isGreaterThan} {version2}: {theResultWas} {result}");
+                        break;
+                }
+            }
+            return result;
+        });
+        return result;
     }
-
-    // THIS CONTAINS THE COMMENTED OUT MAIN METHOD OLD VERSION
-    // private void oldMainMethod()
-    // {
-    //string version1 = args.Count > 0 ? args[0] : string.Empty;
-    //string version2 = args.Count > 0 ? args[1] : string.Empty;
-
-    //string inputVersion = "Input version string in <xx>.<xx>.<xx>.<xx> format";
-
-    //writer.Write($"Hello World from writer of type {writer.GetType()}");
-    //writer.Write("Welcome to CompareVersions. Would you like random version strings? y/n ");
-
-    //string createRandomVersion = writer.ReadLine() ?? "n";
-
-    //if (createRandomVersion == "y" || createRandomVersion == "Y")
-    //{
-    //    writer.Write("Would you like to use equal version strings? y/n ");
-    //    string useEqual = Console.ReadLine() ?? "n";
-
-    //    if (useEqual == "y" || useEqual == "Y")
-    //    {
-    //        version1 = version2 = Version.CreateRandom(separator).ToString();
-    //    }
-    //    else
-    //    {
-    //        version1 = Version.CreateRandom(separator).ToString();
-    //        version2 = Version.CreateRandom(separator).ToString();
-    //    }
-
-    //    // TODO: Work on the TryFormat methods
-    //    // TODO: Work on TryParse methods
-    //}
-    //else
-    //{
-    //    writer.Write(inputVersion);
-    //    version1 = writer.ReadLine() ?? Version.CreateRandom(separator).ToString();
-    //    // version1 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
-
-    //    writer.Write(inputVersion);
-    //    version2 = writer.ReadLine() ?? Version.CreateRandom(separator).ToString();
-    //    // version2 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
-    //}
-
-    //writer.Write($"The version strings are {version1} and {version2}");
-
-    ////var result = comparisonOperations.CompareVersions(version1, version2);
-    //var result = this.ComparisonOperations.Compare(version1, version2);
-    //writeToConsole_1();
-
-    //void writeToConsole_1()
-    //{
-    //    string isLessThan = Constants.IsLessThan;
-    //    string isGreaterThan = Constants.IsGreaterThan;
-    //    string isEqualTo = Constants.IsEqualTo;
-    //    string theResultWas = Constants.TheResultWas;
-
-    //    if (result < 0) writer.Write($"{version1} {isLessThan} {version2}: {theResultWas} {result}");
-    //    if (result == 0) writer.Write($"{version1} {isEqualTo} {version2}: {theResultWas} {result}");
-    //    if (result > 0) writer.Write($"{version1} {isGreaterThan} {version2}: {theResultWas} {result}");
-    //}
-
-    //writer.Write("Have another go? y/n");
-    ////string again = Console.ReadLine() ?? "n";
-    //string again = writer.ReadLine() ?? "n";
-
-    //if (again != "N" || again != "n")
-    //{
-    //    writer.Write("Firing it up...");
-    //    await this.RunAsync(args);
-    //}
-    //else
-    //{
-    //    Environment.Exit(result);
-    //}
-
-    ////Console.ReadLine();
-    //writer.ReadLine();
-    //return result;
-    // }
 }

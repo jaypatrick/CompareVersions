@@ -15,10 +15,10 @@
 [Serializable()]
 public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Version>, IComparable, ICloneable, IAdditionOperators<Version, Version, Version>, IAdditiveIdentity<Version, Version>
 {
-    private static readonly string _tooManySegments = "Version string can only have at most 4 segments.";
-    private static readonly char _separator = Constants.VersionSeparators[0];
-    private static readonly int _floor = Constants.VersionSegmentFloor;
-    private static readonly int _ceiling = Constants.VersionSegmentCeiling;
+    private static readonly string TooManySegments = "Version string can only have at most 4 segments.";
+    private static readonly char Separator = Constants.VersionSeparators[0];
+    private static readonly int Floor = Constants.VersionSegmentFloor;
+    private static readonly int Ceiling = Constants.VersionSegmentCeiling;
 
     /// <summary>
     /// Gets the <see cref="Segment"/> with the specified position.
@@ -30,8 +30,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <returns></returns>
     public Segment this[int position]
     {
-        get { return Segments[position]; }
-        set { Segments[position] = value; }
+        get => Segments[position];
+        set => Segments[position] = value;
     }
 
     /// <summary>
@@ -44,8 +44,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <returns></returns>
     public Segment this[SegmentType segmentType]
     {
-        get { return Segments[(int)segmentType]; }
-        set { Segments[(int)segmentType] = value; }
+        get => Segments[(int)segmentType];
+        set => Segments[(int)segmentType] = value;
     }
 
     /// <summary>
@@ -145,7 +145,16 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     [SetsRequiredMembers()]
     public Version(params int[] parts)
     {
-        if (parts.Length > 4) throw new ArgumentOutOfRangeException(_tooManySegments);
+        if (parts == null) throw new ArgumentNullException(nameof(parts));
+
+        switch (parts.Length)
+        {
+            case > 4:
+                throw new ArgumentOutOfRangeException(TooManySegments);
+            case 0:
+                throw new ArgumentException("Value cannot be an empty collection.", nameof(parts));
+        }
+
         var segments = new List<Segment>(parts.Length);
 
         for (int i = 0; i < parts.Length; i++)
@@ -175,7 +184,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     [SetsRequiredMembers()]
     public Version(List<Segment> segments)
     {
-        if (segments.Count > 4) throw new ArgumentOutOfRangeException(_tooManySegments);
+        if (segments == null) throw new ArgumentNullException(nameof(segments));
+        if (segments.Count > 4) throw new ArgumentOutOfRangeException(TooManySegments);
         Segments = segments;
         SetVersionSegmentProperties(segments);
     }
@@ -189,6 +199,9 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
 
     private void SetVersionSegmentProperties(List<Segment> segments)
     {
+        if (segments == null) throw new ArgumentNullException(nameof(segments));
+        if (segments.Count == 0) throw new ArgumentException("Value cannot be an empty collection.", nameof(segments));
+
         MajorSegment = segments[0];
         MinorSegment = segments[1];
         PatchSegment = segments[2] ?? Segment.Default;
@@ -198,18 +211,29 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <summary>
     /// Returns a default instance of the <see cref="Version"/> object
     /// </summary>
-    public static Version Default
+    public static Version Default => new();
+
+
+    /// <summary>
+    /// Randoms the integer.
+    /// </summary>
+    /// <param name="minimum">The minimum.</param>
+    /// <param name="maximum">The maximum.</param>
+    /// <returns></returns>
+    public static int RandomInteger(int minimum, int maximum)
     {
-        get => new();
+        var random = new Random();
+        return random.Next(minimum, maximum);
     }
 
     /// <summary>
     /// Creates a random Version object
     /// </summary>
+    /// <param name="randomizer"></param>
     /// <param name="separator"></param>
     /// <param name="numberOfSegments"></param>
     /// <returns>A fully constructed <see cref="Version"/> object for consumption.</returns>
-    public static Version CreateRandom(char? separator, int numberOfSegments = 4) // => new Version().CreateRandom(_separator ?? _separator);
+    public static Version CreateRandom(Func<int, int, int>? randomizer, char? separator, int numberOfSegments = 4)
     {
         _ = separator ?? Constants.VersionSeparators[0];
 
@@ -221,14 +245,28 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         int min = Constants.VersionSegmentFloor;
         int max = Constants.VersionSegmentCeiling;
 
-        Random r = new();
-        List<Segment> segs = new(numberOfSegments);
-        for (int i = 0; i < numberOfSegments; i++)
-        {
-            Segment s = new((SegmentType)i, r.Next(min, max));
-            segs.Add(s);
-        }
+        List<Segment> segs = null;
+        Func<int, int, int> random = randomizer;
 
+        if (randomizer == null)
+        {
+            Random r = new();
+            segs = new(numberOfSegments);
+            for (int i = 0; i < numberOfSegments; i++)
+            {
+                Segment s = new((SegmentType)i, r.Next(min, max));
+                segs.Add(s);
+            }
+        }
+        else
+        {
+            segs = new(numberOfSegments);
+            for (int i = 0; i < numberOfSegments; i++)
+            {
+                Segment s = new((SegmentType)i, random(min, max));
+                segs.Add(s);
+            }
+        }
         return new Version(segs);
     }
     /// <summary>
@@ -308,9 +346,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <returns></returns>
     public bool RemoveSegment(Segment segment)
     {
-        if (Segments.Contains(segment))
-            return Segments.Remove(segment);
-        else return false;
+        return Segments.Contains(segment) && Segments.Remove(segment);
     }
 
     /// <summary>
@@ -344,8 +380,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// </value>
     public required Segment MajorSegment
     {
-        get { return Segments[(int)SegmentType.Major]; }
-        set { Segments[(int)SegmentType.Major] = value; }
+        get => Segments[(int)SegmentType.Major];
+        set => Segments[(int)SegmentType.Major] = value;
     }
 
     /// <summary>
@@ -356,8 +392,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// </value>
     public required Segment MinorSegment
     {
-        get { return Segments[(int)SegmentType.Minor]; }
-        set { Segments[(int)SegmentType.Minor] = value; }
+        get => Segments[(int)SegmentType.Minor];
+        set => Segments[(int)SegmentType.Minor] = value;
     }
     /// <summary>
     /// Gets or sets the patch segment.
@@ -367,8 +403,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// </value>
     public required Segment PatchSegment
     {
-        get { return Segments[(int)SegmentType.Patch]; }
-        set { Segments[(int)SegmentType.Patch] = value ?? Segment.Default; }
+        get => Segments[(int)SegmentType.Patch];
+        set => Segments[(int)SegmentType.Patch] = value ?? Segment.Default;
     }
     /// <summary>
     /// Gets or sets the build segment.
@@ -378,8 +414,8 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// </value>
     public required Segment BuildSegment
     {
-        get { return Segments[(int)SegmentType.Build]; }
-        set { Segments[(int)SegmentType.Build] = value ?? Segment.Default; }
+        get => Segments[(int)SegmentType.Build];
+        set => Segments[(int)SegmentType.Build] = value ?? Segment.Default;
     }
 
     /// <summary>Gets the additive identity of the current type.</summary>
@@ -397,7 +433,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         foreach (var segment in Segments)
         {
             segments.Append(segment);
-            segments.Append(_separator);
+            segments.Append(Separator);
         }
 
         segments.Length--;
@@ -437,10 +473,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// </returns>
     public override bool Equals([AllowNull] object obj)
     {
-        if (obj is not Version v)
-            return false;
-
-        return Equals(v);
+        return obj is Version v && Equals(v);
     }
 
     /// <summary>
@@ -614,7 +647,6 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <returns>The sum of <paramref name="left" /> and <paramref name="right" />.</returns>
     public static Version operator +(Version left, Version right)
     {
-        Segment segment;
         List<Segment> segments = new();
 
         foreach (var s in left)
@@ -623,7 +655,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
             {
                 if (s.SegmentType == r.SegmentType)
                 {
-                    segment = s + r;
+                    var segment = s + r;
                     segments.Add(segment);
                 }
             }

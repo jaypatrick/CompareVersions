@@ -12,17 +12,17 @@ public static class Program
     /// </summary>
     /// <param name="args">The arguments.</param>
     /// <returns></returns>
-    static async Task<int> Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
         AppDomain.CurrentDomain.UnhandledException += UnhandledExceptionTrapper;
         using IHost host = Host.CreateDefaultBuilder(args)
             .ConfigureServices((_, services) =>
                 services
-                    .AddScoped<IComparisonOperations<Version>, VersionComparer<Version>>()
+                    .AddTransient<IComparisonOperations<Version>, VersionComparer<Version>>()
                     .AddHostedService<Worker>()
-                    .AddSingleton<IMessageWriter, ConsoleWriter>()
+                    .AddTransient<IMessageWriter, ConsoleWriter>()
                     // .AddSingleton<IMessageWriter, LoggingWriter>()
-                    .AddSingleton<ICommandLine, CommandLineOptions>()
+                    .AddTransient<ICommandLine, CommandLineOptions>()
                     .AddScoped<Application<Version>>())
             .Build();
 
@@ -36,7 +36,7 @@ public static class Program
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The <see cref="UnhandledExceptionEventArgs"/> instance containing the event data.</param>
-    static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
+    private static void UnhandledExceptionTrapper(object sender, UnhandledExceptionEventArgs e)
     {
         Console.WriteLine(e.ExceptionObject.ToString());
         Console.WriteLine("Press Enter to Exit");

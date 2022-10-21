@@ -8,7 +8,7 @@ namespace CompareVersions.UI;
 public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     where TVersion : Version
 {
-    private readonly char separator = Constants.VersionSeparators[0];
+    private readonly char _separator = Constants.VersionSeparators[0];
 
     /// <summary>
     /// Compares the specified left side version.
@@ -18,6 +18,9 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     /// <returns></returns>
     public int Compare([AllowNull] string leftSideVersion, [AllowNull] string rightSideVersion)
     {
+        if (leftSideVersion == null) throw new ArgumentNullException(nameof(leftSideVersion));
+        if (rightSideVersion == null) throw new ArgumentNullException(nameof(rightSideVersion));
+
         return CompareVersions(leftSideVersion, rightSideVersion);
     }
 
@@ -30,9 +33,7 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     public int Compare([AllowNull] TVersion leftSideVersion, [AllowNull] TVersion rightSideVersion)
     {
         if (leftSideVersion == null) return -1;
-        if (rightSideVersion == null) return 1;
-
-        return leftSideVersion.CompareTo(rightSideVersion);
+        return rightSideVersion == null ? 1 : leftSideVersion.CompareTo(rightSideVersion);
     }
 
     /// <summary>
@@ -89,8 +90,8 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
 
         // return 1 when version1 > version2
 
-        var leftSideSegments = new Version(leftSideVersion, separator);
-        var rightSideSegments = new Version(rightSideVersion, separator);
+        var leftSideSegments = new Version(leftSideVersion, _separator);
+        var rightSideSegments = new Version(rightSideVersion, _separator);
 
         return Compare(leftSideSegments, rightSideSegments);
     }
@@ -105,8 +106,6 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     {
         return Compare(leftSideVersion, rightSideVersion);
     }
-
-
 
     /// <summary>
     /// Equals the specified left side version.
@@ -169,6 +168,6 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
             throw new ArgumentNullException(nameof(obj));
         }
 
-        return obj?.GetHashCode() ?? GetHashCode();
+        return obj.GetHashCode();
     }
 }
