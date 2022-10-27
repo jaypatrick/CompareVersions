@@ -222,8 +222,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <returns></returns>
     public static int RandomInteger(int minimum, int maximum)
     {
-        var random = new Random();
-        return random.Next(minimum, maximum);
+        return RandomNumberGenerator.GetInt32(minimum, maximum);
     }
 
     /// <summary>
@@ -246,7 +245,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         int max = Constants.VersionSegmentCeiling;
 
         List<Segment> segs = null;
-        Func<int, int, int> random = randomizer;
+        var random = randomizer;
 
         if (randomizer == null)
         {

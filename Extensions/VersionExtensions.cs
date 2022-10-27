@@ -11,9 +11,10 @@ public static class VersionExtensions
     /// Creates the random.
     /// </summary>
     /// <param name="version">The version.</param>
+    /// <param name="randomizerAlgorithm"></param>
     /// <param name="separator">The _separator.</param>
     /// <returns>A fully constructed <see cref="Version"/>type.</returns>
-    public static Version CreateRandom(this Version version, char? separator)
+    public static Version CreateRandom(this Version version, Func<int, int, int>? randomizerAlgorithm, char? separator)
     {
         char sep = separator ??= Constants.VersionSeparators[0];
 
