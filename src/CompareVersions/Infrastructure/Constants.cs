@@ -15,7 +15,7 @@ public static class Constants
     {
         get
         {
-            return new(new[] { '.' });
+            return new ReadOnlySpan<char>(new[] { '.' });
         }
     }
 
@@ -25,10 +25,7 @@ public static class Constants
     /// <value>
     /// The version segment floor.
     /// </value>
-    public static int VersionSegmentFloor
-    {
-        get { return 0; }
-    }
+    public static int VersionSegmentFloor => 0;
 
     /// <summary>
     /// Gets the version segment ceiling.
@@ -36,10 +33,7 @@ public static class Constants
     /// <value>
     /// The version segment ceiling.
     /// </value>
-    public static int VersionSegmentCeiling
-    {
-        get { return 100; }
-    }
+    public static int VersionSegmentCeiling => 100;
 
     /// <summary>
     /// Gets the maximum number of segments.
@@ -47,10 +41,8 @@ public static class Constants
     /// <value>
     /// The maximum number of segments.
     /// </value>
-    public static int MaxNumberOfSegments
-    {
-        get { return 4; }
-    }
+    public static int MaxNumberOfSegments => 4;
+
     /// <summary>
     /// Gets the is less than.
     /// </summary>
