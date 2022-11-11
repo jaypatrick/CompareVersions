@@ -121,7 +121,7 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     /// <param name="leftSideVersion">The left side version.</param>
     /// <param name="rightSideVersion">The right side version.</param>
     /// <returns></returns>
-    public new bool Equals(object? leftSideVersion, object? rightSideVersion)
+    public bool Equals(object? leftSideVersion, object? rightSideVersion)
     {
         if (leftSideVersion is not Version version1)
         {

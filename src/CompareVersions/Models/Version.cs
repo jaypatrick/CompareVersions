@@ -22,7 +22,9 @@ public class Version : IEnumerable<Segment>,
     ICloneable,
     IAdditionOperators<Version, Version, Version>,
     IAdditiveIdentity<Version, Version>,
-    ISpanFormattable
+    ISpanFormattable,
+    ISpanParsable<Version>,
+    IParsable<Version>
 {
     private static readonly string TooManySegments = "Version string can only have at most 4 segments.";
     private static readonly char Separator = Constants.VersionSeparators[0];
@@ -580,6 +582,29 @@ public class Version : IEnumerable<Segment>,
     }
 
     /// <summary>
+    ///
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="provider"></param>
+    /// <returns></returns>
+    public static Version Parse(string s, IFormatProvider? provider)
+    {
+        return Parse(s);
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="provider"></param>
+    /// <returns></returns>
+    public static Version Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
+    {
+        return Parse(s);
+    }
+
+
+    /// <summary>
     /// Parses the specified input.
     /// </summary>
     /// <param name="input">The input.</param>
@@ -614,6 +639,30 @@ public class Version : IEnumerable<Segment>,
         }
 
         return (result = ParseVersion(input.AsSpan(), throwOnFailure: false)) != null;
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="provider"></param>
+    /// <param name="result"></param>
+    /// <returns></returns>
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Version result)
+    {
+        return TryParse(s, out result);
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="s"></param>
+    /// <param name="provider"></param>
+    /// <param name="result"></param>
+    /// <returns></returns>
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Version result)
+    {
+        return TryParse(s, out result);
     }
 
     /// <summary>
