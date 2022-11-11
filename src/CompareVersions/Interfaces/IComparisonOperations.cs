@@ -5,12 +5,12 @@ namespace CompareVersions.Interfaces;
 /// <summary>
 ///     Interface that does comparison operations on for <see cref="Version"/>version strings
 /// </summary>
-/// <typeparam name="T"></typeparam>
+/// <typeparam name="T">T is <see cref="Version"/></typeparam>
 /// <seealso cref="System.Collections.Generic.IComparer{T}" />
 /// <seealso cref="System.Collections.Generic.IEqualityComparer{T}" />
 /// <seealso cref="System.Collections.IComparer" />
 /// <seealso cref="System.Collections.IEqualityComparer" />
-public interface IComparisonOperations<T>
+public interface IComparisonOperations<in T>
     : IComparer<T>, IEqualityComparer<T>, IComparer, IEqualityComparer
 {
     /// <summary>

@@ -5,7 +5,14 @@ VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompareVersions", "src\CompareVersions\CompareVersions.csproj", "{A7535E95-3BB8-416B-93CE-79D3B390C18D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CompareVersionsTests.xUnit", "test\CompareVersionsTests.xUnit\CompareVersionsTests.xUnit.csproj", "{DE10CDB7-3095-4DDE-AF2B-AF05776FC1FC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CompareVersionsTests.xUnit", "test\CompareVersionsTests.xUnit\CompareVersionsTests.xUnit.csproj", "{DE10CDB7-3095-4DDE-AF2B-AF05776FC1FC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Github", "Github", "{392F02F0-A943-4329-9ADE-62EFBF098A5A}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Global", "Global", "{CC6BB7F7-44A6-46C3-845B-9D694E0BB885}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

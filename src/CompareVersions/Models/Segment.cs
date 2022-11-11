@@ -8,8 +8,16 @@
 /// <seealso cref="IComparable" />
 /// <seealso cref="IAdditionOperators{TSelf, TOther, TResult}"/>
 /// <seealso cref="IAdditiveIdentity{TSelf, TResult}"/>
+/// <seealso cref="IIncrementOperators{TSelf}"/>
+/// <seealso cref="IDecrementOperators{TSelf}"/>
 [Serializable()]
-public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, IAdditionOperators<Segment, Segment, Segment>, IAdditiveIdentity<Segment, Segment>
+public class Segment : IComparable<Segment>,
+    IEquatable<Segment>,
+    IComparable,
+    IAdditionOperators<Segment, Segment, Segment>,
+    IAdditiveIdentity<Segment, Segment>,
+    IIncrementOperators<Segment>,
+    IDecrementOperators<Segment>
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Segment"/> class.
@@ -235,17 +243,74 @@ public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable, I
             right
         };
 
-        //foreach (var s in segments)
-        //{
-        //    var inner = segments.Sum(s => s.Value);
-        //    yield return new List<Segment>()
-        //    {
-        //        new(s.SegmentType, inner)
-        //    };
-        //}
-
         var result = segments.Sum(s => s.Value);
         return new(left.SegmentType, result);
+    }
+
+    /// <summary>
+    /// Implements the operator op_Increment.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The result of the operator.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">nameof(value)</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// $"Segment value {value.Value} after increment operation is greater than the max allowed: {Constants.MaxNumberOfSegments}., nameof(value)
+    /// or
+    /// $"Segment value {value.Value} is less than zero., nameof(value)
+    /// </exception>
+    public static Segment operator ++(Segment value)
+    {
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (value.Value >= Constants.VersionSegmentCeiling)
+        {
+            throw new ArgumentOutOfRangeException($"Segment value {value.Value} after increment operation is greater than the max allowed: {Constants.MaxNumberOfSegments}.", nameof(value));
+        }
+        if (value.Value < Constants.VersionSegmentFloor)
+        {
+            throw new ArgumentOutOfRangeException($"Segment value {value.Value} is less than zero.", nameof(value));
+        }
+
+        int segmentValue = value.Value;
+        segmentValue++;
+
+        Segment segment = new(value.SegmentType, segmentValue);
+        return segment;
+
+    }
+
+    /// <summary>
+    /// Implements the operator op_Decrement.
+    /// </summary>
+    /// <param name="value">The value.</param>
+    /// <returns>
+    /// The result of the operator.
+    /// </returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public static Segment operator --(Segment value)
+    {
+        if (value is null)
+        {
+            throw new ArgumentNullException(nameof(value));
+        }
+        if (value.Value >= Constants.MaxNumberOfSegments)
+        {
+            throw new ArgumentOutOfRangeException($"Segment value {value.Value} after increment operation is greater than the max allowed: {Constants.VersionSegmentCeiling}.", nameof(value));
+        }
+        if (value.Value <= Constants.VersionSegmentFloor)
+        {
+            throw new ArgumentOutOfRangeException($"Segment value {value.Value} is less than zero.", nameof(value));
+        }
+
+        int segmentValue = value.Value;
+        segmentValue--;
+
+        Segment segment = new(value.SegmentType, segmentValue);
+        return segment;
     }
 
     /// <summary>
