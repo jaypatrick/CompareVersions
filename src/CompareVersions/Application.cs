@@ -148,7 +148,7 @@ public class Application<T>
             writer.WriteLine("Welcome to CompareVersions. Would you like random version strings? y/n ");
 
             string createRandomVersion = writer.ReadLine() ?? "n";
-            Func<int, int, int> randomizer = new(Version.RandomInteger);
+            Func<int, int, int> randomizer = Version.RandomInteger;
 
             if (createRandomVersion == "y" || createRandomVersion == "Y")
             {
@@ -164,19 +164,14 @@ public class Application<T>
                     version1 = Version.CreateRandom(randomizer, separator).ToString();
                     version2 = Version.CreateRandom(randomizer, separator).ToString();
                 }
-
-                // TODO: Work on the TryFormat methods
-                // TODO: Work on TryParse methods
             }
             else
             {
                 writer.Write(inputVersion);
                 version1 = writer.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
-                // version1 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
 
                 writer.Write(inputVersion);
                 version2 = writer.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
-                // version2 = Console.ReadLine() ?? Version.CreateRandom(_separator).ToString();
             }
 
             writer.Write($"The version strings are {version1} and {version2}");

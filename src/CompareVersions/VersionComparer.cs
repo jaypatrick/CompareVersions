@@ -55,13 +55,13 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
         Version version1 = leftSideVersion as Version;
         if (version1 == null)
         {
-            throw new ArgumentException(nameof(leftSideVersion), "Argument must be of type 'Version'.");
+            throw new ArgumentException("Argument must be of type 'Version'.", nameof(leftSideVersion));
         }
 
         Version version2 = rightSideVersion as Version;
         if (version2 == null)
         {
-            throw new ArgumentException(nameof(rightSideVersion), "Argument must be of type 'Version'.");
+            throw new ArgumentException("Argument must be of type 'Version'.", nameof(rightSideVersion));
         }
 
         return version1.CompareTo(version2);
@@ -108,10 +108,10 @@ public class VersionComparer<TVersion> : IComparisonOperations<TVersion>
     }
 
     /// <summary>
-    /// Equals the specified left side version.
+    /// Equals the specified left side.
     /// </summary>
-    /// <param name="leftSideVersion">The left side version.</param>
-    /// <param name="rightSideVersion">The right side version.</param>
+    /// <param name="leftSideVersion"></param>
+    /// <param name="rightSideVersion"></param>
     /// <returns></returns>
     public bool Equals(TVersion? leftSideVersion, TVersion? rightSideVersion) => leftSideVersion.Equals(rightSideVersion);
 

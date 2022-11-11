@@ -8,7 +8,7 @@ namespace CompareVersions.Infrastructure;
 /// <seealso cref="CompareVersions.Interfaces.IMessageWriter" />
 public class LoggingWriter : IMessageWriter
 {
-    private ILogger<LoggingWriter> _logger { get; }
+    private ILogger<LoggingWriter> Logger { get; }
 
     /// <summary>
     /// Gets a value indicating whether this instance is output redirected.
@@ -66,7 +66,7 @@ public class LoggingWriter : IMessageWriter
     /// <param name="stdError">The standard error.</param>
     public LoggingWriter(ILogger<LoggingWriter> logger, IStandardStreamWriter? stdOut = null, IStandardStreamWriter? stdError = null)
     {
-        this._logger = logger;
+        this.Logger = logger;
         this.Out = stdOut ?? StandardStreamWriter.Create(Console.Out);
         this.Error = stdError ?? StandardStreamWriter.Create(Console.Error);
     }
@@ -75,7 +75,7 @@ public class LoggingWriter : IMessageWriter
     /// Writes the specified message.
     /// </summary>
     /// <param name="message">The message.</param>
-    public void Write(string message) => _logger.LogInformation(message);
+    public void Write(string? message) => Logger.LogInformation(message);
 
     /// <summary>
     /// Reads the line.
@@ -92,7 +92,7 @@ public class LoggingWriter : IMessageWriter
     /// <param name="message">The message.</param>
     public void WriteLine(string? message)
     {
-        _logger.LogTrace(message);
+        Logger.LogTrace(message);
     }
 
     /// <summary>

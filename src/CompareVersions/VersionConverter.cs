@@ -53,7 +53,7 @@ public class VersionConverter : TypeConverter
         }
         else
         {
-            return base.ConvertFrom(context, culture, value);
+            return base.ConvertFrom(context, culture, value) ?? throw new InvalidOperationException();
         }
     }
 
@@ -82,6 +82,6 @@ public class VersionConverter : TypeConverter
             }
         }
 
-        return base.ConvertTo(context, culture, value, destinationType);
+        return base.ConvertTo(context, culture, value, destinationType) ?? throw new InvalidOperationException();
     }
 }

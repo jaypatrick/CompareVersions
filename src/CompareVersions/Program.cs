@@ -21,8 +21,8 @@ public static class Program
                     .AddTransient<IComparisonOperations<Version>, VersionComparer<Version>>()
                     .AddHostedService<Worker>()
                     .AddTransient<IMessageWriter, ConsoleWriter>()
-                    // .AddSingleton<IMessageWriter, LoggingWriter>()
                     .AddTransient<ICommandLine, CommandLineOptions>()
+                    .AddScoped<Version, Version>()
                     .AddScoped<Application<Version>>())
             .Build();
 

@@ -11,9 +11,18 @@
 /// <seealso cref="IComparable{Version}" />
 /// <seealso cref="IEquatable{Version}" />
 /// <seealso cref="IComparable" />
+/// <seealso cref="IAdditiveIdentity{TSelf,TResult}"/>
+/// <seealso cref="ISpanFormattable"/>
 [TypeConverter(typeof(UI.VersionConverter))]
 [Serializable()]
-public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Version>, IComparable, ICloneable, IAdditionOperators<Version, Version, Version>, IAdditiveIdentity<Version, Version>
+public class Version : IEnumerable<Segment>,
+    IComparable<Version>,
+    IEquatable<Version>,
+    IComparable,
+    ICloneable,
+    IAdditionOperators<Version, Version, Version>,
+    IAdditiveIdentity<Version, Version>,
+    ISpanFormattable
 {
     private static readonly string TooManySegments = "Version string can only have at most 4 segments.";
     private static readonly char Separator = Constants.VersionSeparators[0];
@@ -68,10 +77,10 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
             (
               new List<Segment>
               {
-                  new Segment(SegmentType.Major, version.Major),
-                  new Segment(SegmentType.Minor, version.Minor),
-                  new Segment(SegmentType.Patch, version.Build),
-                  new Segment(SegmentType.Build, version.Revision)
+                  new(SegmentType.Major, version.Major),
+                  new(SegmentType.Minor, version.Minor),
+                  new(SegmentType.Patch, version.Build),
+                  new(SegmentType.Build, version.Revision)
               }
             )
     { }
@@ -109,13 +118,30 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     [SetsRequiredMembers()]
     public Version(Segment majorSegment, Segment minorSegment, Segment patchSegment, Segment buildSegment)
         : this
-              (
-                new List<Segment>
-                {
-                    majorSegment, minorSegment, patchSegment, buildSegment
-                }
-              )
+          (
+            new List<Segment>
+            {
+                majorSegment, minorSegment, patchSegment, buildSegment
+            }
+          )
     { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="Version"/> class.
+    /// </summary>
+    /// <param name="version">The version.</param>
+    [SetsRequiredMembers()]
+    private Version(Version version)
+    {
+        Debug.Assert(version != null);
+
+        this.Segments = version.Segments;
+
+        this.MajorSegment = version.MajorSegment;
+        this.MinorSegment = version.MinorSegment;
+        this.PatchSegment = version.PatchSegment;
+        this.BuildSegment = version.BuildSegment;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Version"/> class.
@@ -128,13 +154,13 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     public Version(int major, int minor, int patch = 0, int build = 0)
         : this
         (
-              new List<Segment>
-              {
-                  new Segment(SegmentType.Major, major),
-                  new Segment(SegmentType.Minor, minor),
-                  new Segment(SegmentType.Patch, patch),
-                  new Segment(SegmentType.Build, build)
-              }
+    new List<Segment>
+          {
+              new(SegmentType.Major, major),
+              new(SegmentType.Minor, minor),
+              new(SegmentType.Patch, patch),
+              new(SegmentType.Build, build)
+          }
         )
     { }
 
@@ -197,6 +223,12 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     public (Segment major, Segment minor, Segment? patch, Segment? build) GetVersion()
         => (MajorSegment, MinorSegment, PatchSegment, BuildSegment);
 
+    /// <summary>
+    /// Sets the version segment properties.
+    /// </summary>
+    /// <param name="segments">The segments.</param>
+    /// <exception cref="System.ArgumentNullException">segments</exception>
+    /// <exception cref="System.ArgumentException">Value cannot be an empty collection. - segments</exception>
     private void SetVersionSegmentProperties(List<Segment> segments)
     {
         if (segments == null) throw new ArgumentNullException(nameof(segments));
@@ -211,7 +243,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <summary>
     /// Returns a default instance of the <see cref="Version"/> object
     /// </summary>
-    public static Version Default => new();
+    public static Version Default => default(Version);
 
 
     /// <summary>
@@ -232,41 +264,26 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <param name="separator"></param>
     /// <param name="numberOfSegments"></param>
     /// <returns>A fully constructed <see cref="Version"/> object for consumption.</returns>
-    public static Version CreateRandom(Func<int, int, int>? randomizer, char? separator, int numberOfSegments = 4)
+    public static Version CreateRandom(Func<int, int, int> randomizer, char? separator, int numberOfSegments = 4)
     {
         _ = separator ?? Constants.VersionSeparators[0];
 
         if (numberOfSegments > Constants.MaxNumberOfSegments)
             throw new ArgumentOutOfRangeException(nameof(numberOfSegments), $"Too many segments specified: {numberOfSegments} supplied, {Constants.MaxNumberOfSegments} is max accepted.");
         if (numberOfSegments <= 0)
-            throw new ArgumentOutOfRangeException(nameof(numberOfSegments), "Must specify at least one segment for range");
+            throw new ArgumentOutOfRangeException(nameof(numberOfSegments), $"Must specify at least one segment for range {uint.MinValue} to {Constants.MaxNumberOfSegments}");
 
         int min = Constants.VersionSegmentFloor;
         int max = Constants.VersionSegmentCeiling;
-
-        List<Segment> segs = null;
         var random = randomizer;
 
-        if (randomizer == null)
+        List<Segment> segments = new(numberOfSegments);
+        for (int i = 0; i < numberOfSegments; i++)
         {
-            Random r = new();
-            segs = new(numberOfSegments);
-            for (int i = 0; i < numberOfSegments; i++)
-            {
-                Segment s = new((SegmentType)i, r.Next(min, max));
-                segs.Add(s);
-            }
+            Segment s = new((SegmentType)i, random(min, max));
+            segments.Add(s);
         }
-        else
-        {
-            segs = new(numberOfSegments);
-            for (int i = 0; i < numberOfSegments; i++)
-            {
-                Segment s = new((SegmentType)i, random(min, max));
-                segs.Add(s);
-            }
-        }
-        return new Version(segs);
+        return new Version(segments);
     }
     /// <summary>
     /// Adds the segment.
@@ -275,6 +292,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <param name="replaceIfFound"></param>
     public bool AddSegment(Segment segment, bool replaceIfFound)
     {
+        if (segment == null) throw new ArgumentNullException(nameof(segment));
         if (!Segments.Contains(segment))
         {
             // simply add the segment
@@ -325,9 +343,10 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// Replaces the segment.
     /// </summary>
     /// <param name="segment">The segment.</param>
+    /// <param name="replaceIfFound">if set to <c>true</c> [replace if found].</param>
     /// <returns></returns>
-    public bool ReplaceSegment(Segment segment)
-        => AddSegment(segment, true);
+    public bool ReplaceSegment(Segment segment, bool replaceIfFound = true)
+        => AddSegment(segment, replaceIfFound);
 
     /// <summary>
     /// Replaces the segment.
@@ -417,7 +436,12 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         set => Segments[(int)SegmentType.Build] = value ?? Segment.Default;
     }
 
-    /// <summary>Gets the additive identity of the current type.</summary>
+    /// <summary>
+    /// Gets the additive identity.
+    /// </summary>
+    /// <value>
+    /// The additive identity.
+    /// </value>
     public static Version AdditiveIdentity => Version.Default;
 
     /// <summary>
@@ -440,13 +464,175 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     }
 
     /// <summary>
+    /// Converts to string.
+    /// </summary>
+    /// <param name="fieldCount">The field count.</param>
+    /// <returns></returns>
+    public string ToString(int fieldCount)
+    {
+        Span<char> dest = stackalloc char[(4 * (10 + 1)) + 3]; // at most 4 Int32s and 3 periods
+        bool success = TryFormat(dest, fieldCount, out int charsWritten);
+        Debug.Assert(success);
+        return dest[..charsWritten].ToString();
+    }
+
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="format">The format.</param>
+    /// <param name="formatProvider">The format provider.</param>
+    /// <returns></returns>
+    public string ToString(string? format, IFormatProvider? formatProvider) => ToString();
+
+    /// <summary>
+    /// Tries the format.
+    /// </summary>
+    /// <param name="destination">The destination.</param>
+    /// <param name="charsWritten">The chars written.</param>
+    /// <param name="format">The format.</param>
+    /// <param name="provider">The provider.</param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+        =>
+            // format and provider are ignored.
+            TryFormat(destination, DefaultFormatFieldCount, out charsWritten);
+
+    /// <summary>
+    /// Tries the format.
+    /// </summary>
+    /// <param name="destination">The destination.</param>
+    /// <param name="charsWritten">The chars written.</param>
+    /// <returns></returns>
+    public bool TryFormat(Span<char> destination, out int charsWritten) =>
+        TryFormat(destination, DefaultFormatFieldCount, out charsWritten);
+
+    /// <summary>
+    /// Tries the format.
+    /// </summary>
+    /// <param name="destination">The destination.</param>
+    /// <param name="fieldCount">The field count.</param>
+    /// <param name="charsWritten">The chars written.</param>
+    /// <returns></returns>
+    public bool TryFormat(Span<char> destination, int fieldCount, out int charsWritten)
+    {
+        switch ((uint)fieldCount)
+        {
+            case > 4:
+                ThrowArgumentException("4");
+                break;
+
+            case >= 3 when BuildSegment.Value == -1:
+                ThrowArgumentException("2");
+                break;
+
+            case 4 when PatchSegment.Value == -1:
+                ThrowArgumentException("3");
+                break;
+
+                static void ThrowArgumentException(string failureUpperBound)
+                {
+                    //throw new ArgumentException(SR.Format(SR.ArgumentOutOfRange_Bounds_Lower_Upper, "0", failureUpperBound), nameof(fieldCount));
+
+                    throw new ArgumentException(Format("ArgumentOutOfRange_Bounds_Lower_Upper", 0, failureUpperBound, true), nameof(fieldCount));
+
+
+                }
+        }
+
+        int totalCharsWritten = 0;
+
+        for (int i = 0; i < fieldCount; i++)
+        {
+            if (i != 0)
+            {
+                if (destination.IsEmpty)
+                {
+                    charsWritten = 0;
+                    return false;
+                }
+
+                destination[0] = '.';
+                destination = destination.Slice(1);
+                totalCharsWritten++;
+            }
+
+            int value = i switch
+            {
+                0 => MajorSegment.Value,
+                1 => MinorSegment.Value,
+                2 => BuildSegment.Value,
+                _ => PatchSegment.Value
+            };
+
+            if (!((uint)value).TryFormat(destination, out int valueCharsWritten))
+            {
+                charsWritten = 0;
+                return false;
+            }
+
+            totalCharsWritten += valueCharsWritten;
+            destination = destination[valueCharsWritten..];
+        }
+
+        charsWritten = totalCharsWritten;
+        return true;
+    }
+
+    /// <summary>
+    /// Parses the specified input.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <returns></returns>
+    public static Version Parse(string input)
+    {
+        ArgumentNullException.ThrowIfNull(input);
+
+        return ParseVersion(input.AsSpan(), throwOnFailure: true)!;
+    }
+
+    /// <summary>
+    /// Parses the specified input.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <returns></returns>
+    public static Version Parse(ReadOnlySpan<char> input) =>
+        ParseVersion(input, throwOnFailure: true)!;
+
+    /// <summary>
+    /// Tries the parse.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <param name="result">The result.</param>
+    /// <returns></returns>
+    public static bool TryParse([NotNullWhen(true)] string? input, [NotNullWhen(true)] out Version? result)
+    {
+        if (input == null)
+        {
+            result = null;
+            return false;
+        }
+
+        return (result = ParseVersion(input.AsSpan(), throwOnFailure: false)) != null;
+    }
+
+    /// <summary>
+    /// Tries the parse.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <param name="result">The result.</param>
+    /// <returns></returns>
+    public static bool TryParse(ReadOnlySpan<char> input, [NotNullWhen(true)] out Version? result) =>
+        (result = ParseVersion(input, throwOnFailure: false)) != null;
+
+    /// <summary>
     /// Indicates whether the current object is equal to another object of the same type.
     /// </summary>
     /// <param name="other">An object to compare with this object.</param>
     /// <returns>
     ///   <see langword="true" /> if the current object is equal to the <paramref name="other" /> parameter; otherwise, <see langword="false" />.
     /// </returns>
-    public bool Equals([AllowNull] Version other)
+    public bool Equals([NotNullWhen(true)] Version? other)
     {
         if (other == null)
             return false;
@@ -470,7 +656,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// <returns>
     ///   <c>true</c> if the specified <see cref="object" /> is equal to this instance; otherwise, <c>false</c>.
     /// </returns>
-    public override bool Equals([AllowNull] object obj)
+    public override bool Equals([NotNullWhen(true)] object? obj)
     {
         return obj is Version v && Equals(v);
     }
@@ -513,6 +699,15 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
                 return -1;
 
         return 0;
+
+        //return
+        //    object.ReferenceEquals(value, this) ? 0 :
+        //    value is null ? 1 :
+        //    MajorSegment != value.MajorSegment ? (MajorSegment > value.MajorSegment ? 1 : -1) :
+        //    MinorSegment != value.MinorSegment ? (MinorSegment > value.MinorSegment ? 1 : -1) :
+        //    BuildSegment != value.BuildSegment ? (BuildSegment > value.BuildSegment ? 1 : -1) :
+        //    PatchSegment != value.PatchSegment ? (PatchSegment > value.PatchSegment ? 1 : -1) :
+        //    0;
     }
 
     /// <summary>
@@ -531,7 +726,7 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         Version v = version as Version;
         if (v == null)
         {
-            throw new ArgumentException(nameof(version), "Argument must be of type 'Version'.");
+            throw new ArgumentException("Argument must be of type 'Version'.", nameof(version));
         }
 
         return CompareTo(v);
@@ -542,15 +737,27 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         //    throw new ArgumentException("Object is not a Segment");
 
     }
+
     /// <summary>
     /// Returns a hash code for this instance.
     /// </summary>
+    /// <remarks>
+    /// Let's assume that most version numbers will be pretty small and just OR some bits together
+    /// </remarks>
     /// <returns>
     /// A hash code for this instance, suitable for use in hashing algorithms and data structures like a hash table.
     /// </returns>
-    public override int GetHashCode() => GetHashCode();
+    public override int GetHashCode()
+    {
+        int accumulator = 0;
 
+        accumulator |= (MajorSegment.Value & 0x0000000F) << 28;
+        accumulator |= (MinorSegment.Value & 0x000000FF) << 20;
+        accumulator |= (BuildSegment.Value & 0x000000FF) << 12;
+        accumulator |= (PatchSegment.Value & 0x00000FFF);
 
+        return accumulator;
+    }
 
     /// <summary>
     /// Implements the operator ==.
@@ -639,11 +846,14 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         return right <= left;
     }
 
-
-    /// <summary>Adds two values together to compute their sum.</summary>
-    /// <param name="left">The value to which <paramref name="right" /> is added.</param>
-    /// <param name="right">The value which is added to <paramref name="left" />.</param>
-    /// <returns>The sum of <paramref name="left" /> and <paramref name="right" />.</returns>
+    /// <summary>
+    /// Implements the operator op_Addition.
+    /// </summary>
+    /// <param name="left">The left.</param>
+    /// <param name="right">The right.</param>
+    /// <returns>
+    /// The result of the operator.
+    /// </returns>
     public static Version operator +(Version left, Version right)
     {
         List<Segment> segments = new();
@@ -688,8 +898,12 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
         return Clone();
     }
 
-    /// <summary>Returns an enumerator that iterates through the collection.</summary>
-    /// <returns>An enumerator that can be used to iterate through the collection.</returns>
+    /// <summary>
+    /// Returns an enumerator that iterates through the collection.
+    /// </summary>
+    /// <returns>
+    /// An enumerator that can be used to iterate through the collection.
+    /// </returns>
     public IEnumerator<Segment> GetEnumerator()
     {
         foreach (var segment in this.Segments)
@@ -703,4 +917,128 @@ public class Version : IEnumerable<Segment>, IComparable<Version>, IEquatable<Ve
     /// </summary>
     /// <returns>a <seealso cref="IEnumerable{Segment}"/></returns>
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+    /// <summary>
+    /// Sets the default format field count.
+    /// </summary>
+    /// <value>
+    /// The default format field count.
+    /// </value>
+    private int DefaultFormatFieldCount =>
+        BuildSegment.Value == -1 ? 2 :
+        PatchSegment.Value == -1 ? 3 :
+        4;
+
+    /// <summary>
+    /// Parses the version.
+    /// </summary>
+    /// <param name="input">The input.</param>
+    /// <param name="throwOnFailure">if set to <c>true</c> [throw on failure].</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException">ArgumentOutOfRange_Version, nameof(input)</exception>
+    private static Version? ParseVersion(ReadOnlySpan<char> input, bool throwOnFailure)
+    {
+        // Find the separator between major and minor.  It must exist.
+        int majorEnd = input.IndexOf('.');
+        if (majorEnd < 0)
+        {
+            if (throwOnFailure) throw new ArgumentException("ArgumentOutOfRange_Version", nameof(input));
+            return null;
+        }
+
+        // Find the ends of the optional minor and build portions.
+        // We musn't have any separators after build.
+        int buildEnd = -1;
+        int minorEnd = input.Slice(majorEnd + 1).IndexOf('.');
+        if (minorEnd >= 0)
+        {
+            minorEnd += (majorEnd + 1);
+            buildEnd = input.Slice(minorEnd + 1).IndexOf('.');
+            if (buildEnd >= 0)
+            {
+                buildEnd += (minorEnd + 1);
+                if (input.Slice(buildEnd + 1).Contains('.'))
+                {
+                    if (throwOnFailure) throw new ArgumentException("ArgumentOutOfRange_Version", nameof(input));
+                    // throw new ArgumentException(SR.Arg_VersionString, nameof(input)); // Format("ArgumentOutOfRange_Bounds_Lower_Upper", 0, failureUpperBound, true), nameof(fieldCount));
+                    return null;
+                }
+            }
+        }
+
+        int minor;
+
+        // Parse the major version
+        if (!TryParseComponent(input[..majorEnd], nameof(input), throwOnFailure, out int major))
+        {
+            return null;
+        }
+
+        if (minorEnd != -1)
+        {
+            // If there's more than a major and minor, parse the minor, too.
+            if (!TryParseComponent(input.Slice(majorEnd + 1, minorEnd - majorEnd - 1), nameof(input), throwOnFailure, out minor))
+            {
+                return null;
+            }
+
+            int build;
+            if (buildEnd != -1)
+            {
+                // major.minor.build.revision
+                int revision;
+                return
+                    TryParseComponent(input.Slice(minorEnd + 1, buildEnd - minorEnd - 1), nameof(build), throwOnFailure, out build) &&
+                    TryParseComponent(input[(buildEnd + 1)..], nameof(revision), throwOnFailure, out revision) ?
+                        new Version(major, minor, build, revision) :
+                        null;
+            }
+
+            // major.minor.build
+            return TryParseComponent(input[(minorEnd + 1)..], nameof(build), throwOnFailure, out build) ?
+                new Version(major, minor, build) :
+                null;
+        }
+
+        // major.minor
+        return TryParseComponent(input[(majorEnd + 1)..], nameof(input), throwOnFailure, out minor) ?
+            new Version(major, minor) :
+            null;
+    }
+
+    /// <summary>
+    /// Tries the parse component.
+    /// </summary>
+    /// <param name="component">The component.</param>
+    /// <param name="componentName">Name of the component.</param>
+    /// <param name="throwOnFailure">if set to <c>true</c> [throw on failure].</param>
+    /// <param name="parsedComponent">The parsed component.</param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentOutOfRangeException">componentName, ArgumentOutOfRange_Version</exception>
+    private static bool TryParseComponent(ReadOnlySpan<char> component, string componentName, bool throwOnFailure, out int parsedComponent)
+    {
+        if (throwOnFailure)
+        {
+            if ((parsedComponent = int.Parse(component, NumberStyles.Integer, CultureInfo.InvariantCulture)) < 0)
+            {
+                throw new ArgumentOutOfRangeException(componentName, "ArgumentOutOfRange_Version");
+            }
+            return true;
+        }
+
+        return int.TryParse(component, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsedComponent) && parsedComponent >= 0;
+    }
+
+    /// <summary>
+    /// Formats the specified resource format.
+    /// </summary>
+    /// <param name="resourceFormat">The resource format.</param>
+    /// <param name="p1">The p1.</param>
+    /// <param name="p2">The p2.</param>
+    /// <param name="useResourceKeys">if set to <c>true</c> [use resource keys].</param>
+    /// <returns></returns>
+    private static string Format(string resourceFormat, object? p1, object? p2, bool useResourceKeys)
+    {
+        return useResourceKeys ? string.Join(", ", resourceFormat, p1, p2) : string.Format(resourceFormat, p1, p2);
+    }
 }
