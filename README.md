@@ -1,2 +1,2 @@
 # CompareVersions
-Academic exercise of writing the Version class from scratch, including all operator comparison methods.
+Academic exercise of writing the Version class from scratch, including all operator comparison methods. Performance is an order of magnitude faster for allocations due to usage of `Span<Char>` via the 

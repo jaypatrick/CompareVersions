@@ -1,6 +1,4 @@
-﻿using CompareVersions.Models;
-
-using Version = CompareVersions.Models.Version;
+﻿using Version = CompareVersions.Models.Version;
 
 namespace CompareVersions.Infrastructure;
 
@@ -58,7 +56,7 @@ public class CommandLineOptions : ICommandLine
         parseArgument: result =>
         {
             var versions = new List<Version>();
-            Func<SegmentType, int, int, Segment> random = new(Segment.RandomSegment);
+            Func<int, int, int> random = new(Version.RandomInteger);
             if (result.Tokens.Count == 0)
             {
                 versions.Add(Version.CreateRandom(random, _separator));

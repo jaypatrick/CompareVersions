@@ -3,21 +3,11 @@
 /// <summary>
 ///     Class that represents a single segment of <see cref="Version"/> object
 /// </summary>
-/// <seealso cref="IComparable{T}" />
-/// <seealso cref="IEquatable{T}" />
+/// <seealso cref="IComparable{UI.Segment}" />
+/// <seealso cref="System.IEquatable{CompareVersions.UI.Segment}" />
 /// <seealso cref="IComparable" />
-/// <seealso cref="IAdditionOperators{TSelf, TOther, TResult}"/>
-/// <seealso cref="IAdditiveIdentity{TSelf, TResult}"/>
-/// <seealso cref="IIncrementOperators{TSelf}"/>
-/// <seealso cref="IDecrementOperators{TSelf}"/>
 [Serializable()]
-public class Segment : IComparable<Segment>,
-    IEquatable<Segment>,
-    IComparable,
-    IAdditionOperators<Segment, Segment, Segment>,
-    IAdditiveIdentity<Segment, Segment>,
-    IIncrementOperators<Segment>,
-    IDecrementOperators<Segment>
+public class Segment : IComparable<Segment>, IEquatable<Segment>, IComparable
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="Segment"/> class.
@@ -28,7 +18,7 @@ public class Segment : IComparable<Segment>,
     [SetsRequiredMembers()]
     public Segment(SegmentType segmentType, int value = 0)
     {
-        if (value >= 100) throw new ArgumentOutOfRangeException(nameof(value), "Segment cannot be greater than 100, per spec");
+        if (value >= 100) throw new ArgumentOutOfRangeException("Segment cannot be greater than 100, per spec");
 
         SegmentType = segmentType;
         Value = value;
@@ -44,22 +34,6 @@ public class Segment : IComparable<Segment>,
     }
 
     /// <summary>
-    /// Gets the floor.
-    /// </summary>
-    /// <value>
-    /// The floor.
-    /// </value>
-    public static int Floor => Constants.VersionSegmentFloor;
-
-    /// <summary>
-    /// Gets the ceiling.
-    /// </summary>
-    /// <value>
-    /// The ceiling.
-    /// </value>
-    public static int Ceiling => Constants.VersionSegmentCeiling;
-
-    /// <summary>
     /// Gets the value.
     /// </summary>
     /// <value>
@@ -70,7 +44,7 @@ public class Segment : IComparable<Segment>,
     /// Defaults this instance.
     /// </summary>
     /// <returns></returns>
-    public static Segment Default => new(0);
+    public static Segment Default => new Segment(0);
     /// <summary>
     /// Gets or sets the type of the segment.
     /// </summary>
@@ -78,15 +52,6 @@ public class Segment : IComparable<Segment>,
     /// The type of the segment.
     /// </value>
     public required SegmentType SegmentType { get; set; }
-
-    /// <summary>
-    /// Gets the additive identity.
-    /// </summary>
-    /// <value>
-    /// The additive identity.
-    /// </value>
-    public static Segment AdditiveIdentity => Segment.Default;
-
     /// <summary>
     /// Compares the current instance with another object of the same type and returns an integer that indicates whether the current instance precedes, follows, or occurs in the same position in the sort order as the other object.
     /// </summary>
@@ -98,12 +63,12 @@ public class Segment : IComparable<Segment>,
     /// <exception cref="ArgumentException">Object is not a Segment</exception>
     public int CompareTo([AllowNull] object obj)
     {
-        return obj switch
-        {
-            null => 1,
-            Segment otherSegment => Value.CompareTo(otherSegment.Value),
-            _ => throw new ArgumentException("Object is not a Segment")
-        };
+        if (obj == null) return 1;
+
+        if (obj is Segment otherSegment)
+            return Value.CompareTo(otherSegment.Value);
+        else
+            throw new ArgumentException("Object is not a Segment");
     }
     /// <summary>
     /// Compares the current instance with another object of the same type and returns an integer that indicates whether the current instance precedes, follows, or occurs in the same position in the sort order as the other object.
@@ -115,7 +80,8 @@ public class Segment : IComparable<Segment>,
     /// </returns>
     public int CompareTo([AllowNull] Segment other)
     {
-        return other == null ? 1 : Value.CompareTo(other.Value);
+        if (other == null) return 1;
+        return Value.CompareTo(other.Value);
     }
     /// <summary>
     /// Indicates whether the current object is equal to another object of the same type.
@@ -129,7 +95,10 @@ public class Segment : IComparable<Segment>,
         if (other == null)
             return false;
 
-        return Value == other.Value;
+        if (Value == other.Value)
+            return true;
+        else
+            return false;
     }
     /// <summary>
     /// Determines whether the specified <see cref="object" />, is equal to this instance.
@@ -144,7 +113,10 @@ public class Segment : IComparable<Segment>,
             return false;
 
         Segment segmentObj = obj as Segment;
-        return segmentObj != null && Equals(segmentObj);
+        if (segmentObj == null)
+            return false;
+        else
+            return Equals(segmentObj);
     }
     /// <summary>
     /// Returns a hash code for this instance.
@@ -238,97 +210,6 @@ public class Segment : IComparable<Segment>,
     {
         return segment1.CompareTo(segment2) <= 0;
     }
-
-    /// <summary>
-    /// Implements the operator op_Addition.
-    /// </summary>
-    /// <param name="left">The left.</param>
-    /// <param name="right">The right.</param>
-    /// <returns>
-    /// The result of the operator.
-    /// </returns>
-    /// <exception cref="ArgumentException">$"Segment type of {nameof(left)} is {left.SegmentType} and does not match {nameof(right)} segment type which is {right.SegmentType}</exception>
-    public static Segment operator +(Segment left, Segment right)
-    {
-        if (left.SegmentType != right.SegmentType)
-            throw new ArgumentException($"Segment type of {nameof(left)} is {left.SegmentType} and does not match {nameof(right)} segment type which is {right.SegmentType}");
-
-        List<Segment> segments = new()
-        {
-            left,
-            right
-        };
-
-        var result = segments.Sum(s => s.Value);
-        return new(left.SegmentType, result);
-    }
-
-    /// <summary>
-    /// Implements the operator op_Increment.
-    /// </summary>
-    /// <param name="value">The value.</param>
-    /// <returns>
-    /// The result of the operator.
-    /// </returns>
-    /// <exception cref="ArgumentNullException">nameof(value)</exception>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// $"Segment value {value.Value} after increment operation is greater than the max allowed: {Constants.MaxNumberOfSegments}., nameof(value)
-    /// or
-    /// $"Segment value {value.Value} is less than zero., nameof(value)
-    /// </exception>
-    public static Segment operator ++(Segment value)
-    {
-        if (value is null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-        if (value.Value >= Constants.VersionSegmentCeiling)
-        {
-            throw new ArgumentOutOfRangeException($"Segment value {value.Value} after increment operation is greater than the max allowed: {Constants.MaxNumberOfSegments}.", nameof(value));
-        }
-        if (value.Value < Constants.VersionSegmentFloor)
-        {
-            throw new ArgumentOutOfRangeException($"Segment value {value.Value} is less than zero.", nameof(value));
-        }
-
-        int segmentValue = value.Value;
-        segmentValue++;
-
-        Segment segment = new(value.SegmentType, segmentValue);
-        return segment;
-
-    }
-
-    /// <summary>
-    /// Implements the operator op_Decrement.
-    /// </summary>
-    /// <param name="value">The value.</param>
-    /// <returns>
-    /// The result of the operator.
-    /// </returns>
-    /// <exception cref="NotImplementedException"></exception>
-    public static Segment operator --(Segment value)
-    {
-        if (value is null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
-        if (value.Value >= Constants.MaxNumberOfSegments)
-        {
-            throw new ArgumentOutOfRangeException($"Segment value {value.Value} after increment operation is greater than the max allowed: {Constants.VersionSegmentCeiling}.", nameof(value));
-        }
-        if (value.Value <= Constants.VersionSegmentFloor)
-        {
-            throw new ArgumentOutOfRangeException($"Segment value {value.Value} is less than zero.", nameof(value));
-        }
-
-        int segmentValue = value.Value;
-        segmentValue--;
-
-        Segment segment = new(value.SegmentType, segmentValue);
-        return segment;
-    }
-
     /// <summary>
     /// Converts to string.
     /// </summary>
@@ -338,29 +219,5 @@ public class Segment : IComparable<Segment>,
     public override string ToString()
     {
         return Value.ToString();
-    }
-
-    /// <summary>
-    /// Randoms the integer.
-    /// </summary>
-    /// <param name="minimum">The minimum.</param>
-    /// <param name="maximum">The maximum.</param>
-    /// <returns></returns>
-    public static int RandomSegment(int minimum, int maximum)
-    {
-        return RandomNumberGenerator.GetInt32(minimum, maximum);
-    }
-
-    /// <summary>
-    /// Randoms the segment.
-    /// </summary>
-    /// <param name="segmentType">Type of the segment.</param>
-    /// <param name="minimum">The minimum.</param>
-    /// <param name="maximum">The maximum.</param>
-    /// <returns></returns>
-    public static Segment RandomSegment(SegmentType segmentType, int minimum, int maximum)
-    {
-        Segment segment = new Segment(segmentType, RandomSegment(minimum, maximum));
-        return segment;
     }
 }

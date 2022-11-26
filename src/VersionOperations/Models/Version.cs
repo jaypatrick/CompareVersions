@@ -11,6 +11,7 @@
 /// <seealso cref="IAdditiveIdentity{TSelf,TResult}"/>
 /// <seealso cref="ISpanFormattable"/>
 /// <seealso cref="ISpanParsable{Version}"/>
+/// <seealso cref="IParsable{Version}"/>
 [TypeConverter(typeof(UI.VersionConverter))]
 [Serializable()]
 public class Version : IEnumerable<Segment>,
@@ -21,17 +22,13 @@ public class Version : IEnumerable<Segment>,
     IAdditionOperators<Version, Version, Version>,
     IAdditiveIdentity<Version, Version>,
     ISpanFormattable,
-    ISpanParsable<Version>
+    ISpanParsable<Version>,
+    IParsable<Version>
 {
     private static readonly string TooManySegments = "Version string can only have at most 4 segments.";
-
-    /// <summary>
-    /// Gets the default separator.
-    /// </summary>
-    /// <value>
-    /// The default separator.
-    /// </value>
-    public static char DefaultSeparator => Constants.VersionSeparators[0];
+    private static readonly char Separator = Constants.VersionSeparators[0];
+    private static readonly int Floor = Constants.VersionSegmentFloor;
+    private static readonly int Ceiling = Constants.VersionSegmentCeiling;
 
     /// <summary>
     /// Gets the <see cref="Segment"/> with the specified position.
@@ -68,9 +65,7 @@ public class Version : IEnumerable<Segment>,
     ///     This initializes all <see cref="Segment"/>values to 0 (zero)
     /// </remarks>
     [SetsRequiredMembers]
-    public Version() : this(0, 0, 0, 0)
-    {
-    }
+    public Version() : this(0, 0, 0, 0) { }
 
     /// <summary>
     ///     Initializes a new instance of the <see cref="Version"/> class.
@@ -80,17 +75,16 @@ public class Version : IEnumerable<Segment>,
     [SetsRequiredMembers()]
     public Version(System.Version version)
         : this
-        (
-            new List<Segment>
-            {
-                new(SegmentType.Major, version.Major),
-                new(SegmentType.Minor, version.Minor),
-                new(SegmentType.Patch, version.Build),
-                new(SegmentType.Build, version.Revision)
-            }
-        )
-    {
-    }
+            (
+              new List<Segment>
+              {
+                  new(SegmentType.Major, version.Major),
+                  new(SegmentType.Minor, version.Minor),
+                  new(SegmentType.Patch, version.Build),
+                  new(SegmentType.Build, version.Revision)
+              }
+            )
+    { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Version"/> class.
@@ -125,14 +119,13 @@ public class Version : IEnumerable<Segment>,
     [SetsRequiredMembers()]
     public Version(Segment majorSegment, Segment minorSegment, Segment patchSegment, Segment buildSegment)
         : this
-        (
+          (
             new List<Segment>
             {
                 majorSegment, minorSegment, patchSegment, buildSegment
             }
-        )
-    {
-    }
+          )
+    { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Version"/> class.
@@ -162,16 +155,15 @@ public class Version : IEnumerable<Segment>,
     public Version(int major, int minor, int patch = 0, int build = 0)
         : this
         (
-            new List<Segment>
-            {
-                new(SegmentType.Major, major),
-                new(SegmentType.Minor, minor),
-                new(SegmentType.Patch, patch),
-                new(SegmentType.Build, build)
-            }
+    new List<Segment>
+          {
+              new(SegmentType.Major, major),
+              new(SegmentType.Minor, minor),
+              new(SegmentType.Patch, patch),
+              new(SegmentType.Build, build)
+          }
         )
-    {
-    }
+    { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Version"/>class
@@ -199,7 +191,6 @@ public class Version : IEnumerable<Segment>,
             //this[i] = new Segment((SegmentType)(i), parts[i]);
             //if (i > 4) return;
         }
-
         Segments = segments;
     }
 
@@ -210,9 +201,7 @@ public class Version : IEnumerable<Segment>,
     /// <exception cref="ArgumentOutOfRangeException"></exception>
     [SetsRequiredMembers()]
     public Version(params Segment[] segments)
-        : this(segments.ToList())
-    {
-    }
+        : this(segments.ToList()) { }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="Version"/> class.
@@ -257,43 +246,46 @@ public class Version : IEnumerable<Segment>,
     /// </summary>
     public static Version Default => default(Version);
 
+
     /// <summary>
-    /// Creates the random.
+    /// Randoms the integer.
     /// </summary>
-    /// <param name="randomizer">The randomizer./></param>
-    /// <param name="separator">The separator.</param>
-    /// <param name="numberOfSegments">The number of segments.</param>
+    /// <param name="minimum">The minimum.</param>
+    /// <param name="maximum">The maximum.</param>
     /// <returns></returns>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// nameof(numberOfSegments), $"Too many segments specified: {numberOfSegments} supplied, {Constants.MaxNumberOfSegments} is max accepted.
-    /// or
-    /// nameof(numberOfSegments), $"Must specify at least one segment for range {uint.MinValue} to {Constants.MaxNumberOfSegments}
-    /// </exception>
-    public static Version CreateRandom(Func<SegmentType, int, int, Segment> randomizer, char? separator,
-        int numberOfSegments = 4)
+    public static int RandomInteger(int minimum, int maximum)
+    {
+        return RandomNumberGenerator.GetInt32(minimum, maximum);
+    }
+
+    /// <summary>
+    /// Creates a random Version object
+    /// </summary>
+    /// <param name="randomizer"></param>
+    /// <param name="separator"></param>
+    /// <param name="numberOfSegments"></param>
+    /// <returns>A fully constructed <see cref="Version"/> object for consumption.</returns>
+    public static Version CreateRandom(Func<int, int, int> randomizer, char? separator, int numberOfSegments = 4)
     {
         _ = separator ?? Constants.VersionSeparators[0];
 
         if (numberOfSegments > Constants.MaxNumberOfSegments)
-            throw new ArgumentOutOfRangeException(nameof(numberOfSegments),
-                $"Too many segments specified: {numberOfSegments} supplied, {Constants.MaxNumberOfSegments} is max accepted.");
+            throw new ArgumentOutOfRangeException(nameof(numberOfSegments), $"Too many segments specified: {numberOfSegments} supplied, {Constants.MaxNumberOfSegments} is max accepted.");
         if (numberOfSegments <= 0)
-            throw new ArgumentOutOfRangeException(nameof(numberOfSegments),
-                $"Must specify at least one segment for range {uint.MinValue} to {Constants.MaxNumberOfSegments}");
+            throw new ArgumentOutOfRangeException(nameof(numberOfSegments), $"Must specify at least one segment for range {uint.MinValue} to {Constants.MaxNumberOfSegments}");
 
-        var min = Constants.VersionSegmentFloor;
-        var max = Constants.VersionSegmentCeiling;
+        int min = Constants.VersionSegmentFloor;
+        int max = Constants.VersionSegmentCeiling;
+        var random = randomizer;
 
         List<Segment> segments = new(numberOfSegments);
-        for (var i = 0; i < numberOfSegments; i++)
+        for (int i = 0; i < numberOfSegments; i++)
         {
-            var s = randomizer((SegmentType)i, min, max);
+            Segment s = new((SegmentType)i, random(min, max));
             segments.Add(s);
         }
-
         return new Version(segments);
     }
-
     /// <summary>
     /// Adds the segment.
     /// </summary>
@@ -388,7 +380,6 @@ public class Version : IEnumerable<Segment>,
             var segment = Segments.Find(s => s.SegmentType == segmentType);
             return RemoveSegment(segment!);
         }
-
         return false;
     }
 
@@ -423,7 +414,6 @@ public class Version : IEnumerable<Segment>,
         get => Segments[(int)SegmentType.Minor];
         set => Segments[(int)SegmentType.Minor] = value;
     }
-
     /// <summary>
     /// Gets or sets the patch segment.
     /// </summary>
@@ -435,7 +425,6 @@ public class Version : IEnumerable<Segment>,
         get => Segments[(int)SegmentType.Patch];
         set => Segments[(int)SegmentType.Patch] = value ?? Segment.Default;
     }
-
     /// <summary>
     /// Gets or sets the build segment.
     /// </summary>
@@ -447,14 +436,6 @@ public class Version : IEnumerable<Segment>,
         get => Segments[(int)SegmentType.Build];
         set => Segments[(int)SegmentType.Build] = value ?? Segment.Default;
     }
-
-    /// <summary>
-    /// Gets or sets the separators.
-    /// </summary>
-    /// <value>
-    /// The separators.
-    /// </value>
-    public required IEnumerable<char> Separators { get; init; }
 
     /// <summary>
     /// Gets the additive identity.
@@ -476,7 +457,7 @@ public class Version : IEnumerable<Segment>,
         foreach (var segment in Segments)
         {
             segments.Append(segment);
-            segments.Append(DefaultSeparator);
+            segments.Append(Separator);
         }
 
         segments.Length--;
@@ -513,8 +494,7 @@ public class Version : IEnumerable<Segment>,
     /// <param name="provider">The provider.</param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format,
-        IFormatProvider? provider)
+    public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
         =>
             // format and provider are ignored.
             TryFormat(destination, DefaultFormatFieldCount, out charsWritten);
@@ -555,9 +535,7 @@ public class Version : IEnumerable<Segment>,
                 {
                     //throw new ArgumentException(SR.Format(SR.ArgumentOutOfRange_Bounds_Lower_Upper, "0", failureUpperBound), nameof(fieldCount));
 
-                    throw new ArgumentException(
-                        Format("ArgumentOutOfRange_Bounds_Lower_Upper", 0, failureUpperBound, true),
-                        nameof(fieldCount));
+                    throw new ArgumentException(Format("ArgumentOutOfRange_Bounds_Lower_Upper", 0, failureUpperBound, true), nameof(fieldCount));
 
 
                 }
@@ -580,13 +558,12 @@ public class Version : IEnumerable<Segment>,
                 totalCharsWritten++;
             }
 
-            var value = i switch
+            int value = i switch
             {
                 0 => MajorSegment.Value,
                 1 => MinorSegment.Value,
                 2 => BuildSegment.Value,
-                3 => PatchSegment.Value,
-                _ => BuildSegment.Value
+                _ => PatchSegment.Value
             };
 
             if (!((uint)value).TryFormat(destination, out int valueCharsWritten))
@@ -670,8 +647,7 @@ public class Version : IEnumerable<Segment>,
     /// <param name="provider"></param>
     /// <param name="result"></param>
     /// <returns></returns>
-    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider,
-        [MaybeNullWhen(false)] out Version result)
+    public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Version result)
     {
         return TryParse(s, out result);
     }
@@ -683,8 +659,7 @@ public class Version : IEnumerable<Segment>,
     /// <param name="provider"></param>
     /// <param name="result"></param>
     /// <returns></returns>
-    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider,
-        [MaybeNullWhen(false)] out Version result)
+    public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Version result)
     {
         return TryParse(s, out result);
     }
@@ -822,7 +797,7 @@ public class Version : IEnumerable<Segment>,
     /// </returns>
     public override int GetHashCode()
     {
-        var accumulator = 0;
+        int accumulator = 0;
 
         accumulator |= (MajorSegment.Value & 0x0000000F) << 28;
         accumulator |= (MinorSegment.Value & 0x000000FF) << 20;
@@ -958,8 +933,7 @@ public class Version : IEnumerable<Segment>,
             buildSegment: new Segment(segmentType: BuildSegment.SegmentType, value: BuildSegment.Value))
         {
             //_separator = _separator,
-            Segments = Segments.ConvertAll(thisSegment =>
-                new Segment(segmentType: thisSegment.SegmentType, value: thisSegment.Value))
+            Segments = Segments.ConvertAll(thisSegment => new Segment(segmentType: thisSegment.SegmentType, value: thisSegment.Value))
         };
     }
 
@@ -1051,8 +1025,7 @@ public class Version : IEnumerable<Segment>,
         if (minorEnd != -1)
         {
             // If there's more than a major and minor, parse the minor, too.
-            if (!TryParseComponent(input.Slice(majorEnd + 1, minorEnd - majorEnd - 1), nameof(input), throwOnFailure,
-                    out minor))
+            if (!TryParseComponent(input.Slice(majorEnd + 1, minorEnd - majorEnd - 1), nameof(input), throwOnFailure, out minor))
             {
                 return null;
             }
@@ -1063,23 +1036,22 @@ public class Version : IEnumerable<Segment>,
                 // major.minor.build.revision
                 int revision;
                 return
-                    TryParseComponent(input.Slice(minorEnd + 1, buildEnd - minorEnd - 1), nameof(build), throwOnFailure,
-                        out build) &&
-                    TryParseComponent(input[(buildEnd + 1)..], nameof(revision), throwOnFailure, out revision)
-                        ? new Version(major, minor, build, revision)
-                        : null;
+                    TryParseComponent(input.Slice(minorEnd + 1, buildEnd - minorEnd - 1), nameof(build), throwOnFailure, out build) &&
+                    TryParseComponent(input[(buildEnd + 1)..], nameof(revision), throwOnFailure, out revision) ?
+                        new Version(major, minor, build, revision) :
+                        null;
             }
 
             // major.minor.build
-            return TryParseComponent(input[(minorEnd + 1)..], nameof(build), throwOnFailure, out build)
-                ? new Version(major, minor, build)
-                : null;
+            return TryParseComponent(input[(minorEnd + 1)..], nameof(build), throwOnFailure, out build) ?
+                new Version(major, minor, build) :
+                null;
         }
 
         // major.minor
-        return TryParseComponent(input[(majorEnd + 1)..], nameof(input), throwOnFailure, out minor)
-            ? new Version(major, minor)
-            : null;
+        return TryParseComponent(input[(majorEnd + 1)..], nameof(input), throwOnFailure, out minor) ?
+            new Version(major, minor) :
+            null;
     }
 
     /// <summary>
@@ -1091,8 +1063,7 @@ public class Version : IEnumerable<Segment>,
     /// <param name="parsedComponent">The parsed component.</param>
     /// <returns></returns>
     /// <exception cref="ArgumentOutOfRangeException">componentName, ArgumentOutOfRange_Version</exception>
-    private static bool TryParseComponent(ReadOnlySpan<char> component, string componentName, bool throwOnFailure,
-        out int parsedComponent)
+    private static bool TryParseComponent(ReadOnlySpan<char> component, string componentName, bool throwOnFailure, out int parsedComponent)
     {
         if (throwOnFailure)
         {
@@ -1100,12 +1071,10 @@ public class Version : IEnumerable<Segment>,
             {
                 throw new ArgumentOutOfRangeException(componentName, "ArgumentOutOfRange_Version");
             }
-
             return true;
         }
 
-        return int.TryParse(component, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsedComponent) &&
-               parsedComponent >= 0;
+        return int.TryParse(component, NumberStyles.Integer, CultureInfo.InvariantCulture, out parsedComponent) && parsedComponent >= 0;
     }
 
     /// <summary>

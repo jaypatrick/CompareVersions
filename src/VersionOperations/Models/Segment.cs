@@ -44,22 +44,6 @@ public class Segment : IComparable<Segment>,
     }
 
     /// <summary>
-    /// Gets the floor.
-    /// </summary>
-    /// <value>
-    /// The floor.
-    /// </value>
-    public static int Floor => Constants.VersionSegmentFloor;
-
-    /// <summary>
-    /// Gets the ceiling.
-    /// </summary>
-    /// <value>
-    /// The ceiling.
-    /// </value>
-    public static int Ceiling => Constants.VersionSegmentCeiling;
-
-    /// <summary>
     /// Gets the value.
     /// </summary>
     /// <value>
@@ -338,29 +322,5 @@ public class Segment : IComparable<Segment>,
     public override string ToString()
     {
         return Value.ToString();
-    }
-
-    /// <summary>
-    /// Randoms the integer.
-    /// </summary>
-    /// <param name="minimum">The minimum.</param>
-    /// <param name="maximum">The maximum.</param>
-    /// <returns></returns>
-    public static int RandomSegment(int minimum, int maximum)
-    {
-        return RandomNumberGenerator.GetInt32(minimum, maximum);
-    }
-
-    /// <summary>
-    /// Randoms the segment.
-    /// </summary>
-    /// <param name="segmentType">Type of the segment.</param>
-    /// <param name="minimum">The minimum.</param>
-    /// <param name="maximum">The maximum.</param>
-    /// <returns></returns>
-    public static Segment RandomSegment(SegmentType segmentType, int minimum, int maximum)
-    {
-        Segment segment = new Segment(segmentType, RandomSegment(minimum, maximum));
-        return segment;
     }
 }

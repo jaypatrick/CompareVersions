@@ -1,6 +1,4 @@
-﻿using CompareVersions.Models;
-
-using Version = CompareVersions.Models.Version;
+﻿using Version = CompareVersions.Models.Version;
 
 namespace CompareVersions;
 
@@ -150,8 +148,7 @@ public class Application<T>
             writer.WriteLine("Welcome to CompareVersions. Would you like random version strings? y/n ");
 
             string createRandomVersion = writer.ReadLine() ?? "n";
-            //Func<int, int, int> randomizer = Segment.RandomSegment;
-            Func<SegmentType, int, int, Segment> randomizer = Segment.RandomSegment;
+            Func<int, int, int> randomizer = Version.RandomInteger;
 
             if (createRandomVersion == "y" || createRandomVersion == "Y")
             {
