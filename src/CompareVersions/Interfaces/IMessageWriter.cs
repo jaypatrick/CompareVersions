@@ -1,10 +1,10 @@
 ﻿namespace CompareVersions.Interfaces
 {
     /// <summary>
-    ///     Interface for writing to the standard console
+    ///     Interface specifying operations for derived classes to build out
     /// </summary>
     /// <seealso cref="System.CommandLine.IConsole" />
-    public interface IMessageWriter : IConsole
+    public interface IMessageWriter
     {
         /// <summary>
         /// Writes the specified message.

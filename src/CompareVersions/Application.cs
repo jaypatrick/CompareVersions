@@ -51,8 +51,6 @@ public class Application<T>
     /// </value>
     public IMessageWriter ConsoleWriter { get; init; }
 
-    private readonly IMessageWriter _writer;
-
     /// <summary>
     /// Initializes a new instance of the <see cref="Application{T}"/> class.
     /// </summary>
@@ -81,7 +79,7 @@ public class Application<T>
             ?? throw new ArgumentNullException(nameof(messageWriters));
         this.CommandLine = commandLine
             ?? throw new ArgumentNullException(nameof(commandLine));
-        this.ConsoleWriter = _writer = consoleWriter
+        this.ConsoleWriter = consoleWriter
             ?? throw new ArgumentNullException(nameof(consoleWriter));
     }
 
@@ -94,7 +92,6 @@ public class Application<T>
     {
         // standard console, TODO: need to also set up logging writer
         //var writer = this.ConsoleWriter;
-        var writer = _writer;
         char separator = Constants.VersionSeparators[0];
 
         // TODO: Finish setting up the command line options here
@@ -109,13 +106,13 @@ public class Application<T>
 
         await HandleVersions(args);
 
-        writer.WriteLine("Have another go? y/n");
-        string again = writer.ReadLine() ?? "n";
+        this.ConsoleWriter.WriteLine("Have another go? y/n");
+        string again = this.ConsoleWriter.ReadLine() ?? "n";
         int result = 0;
 
         if (again != "N" || again != "n")
         {
-            writer.WriteLine("Firing it up...");
+            this.ConsoleWriter.WriteLine("Firing it up...");
             result = await this.RunAsync(args);
         }
         else
@@ -124,7 +121,7 @@ public class Application<T>
         }
 
         //Console.ReadLine();
-        writer.ReadLine();
+        this.ConsoleWriter.ReadLine();
         return result;
     }
 
@@ -139,23 +136,22 @@ public class Application<T>
         await Task.Run(() =>
         {
             char separator = Constants.VersionSeparators[0];
-            var writer = _writer;
 
             string version1 = args.Count > 0 ? args[0] : string.Empty;
             string version2 = args.Count > 0 ? args[1] : string.Empty;
 
             string inputVersion = "Input version string in <xx>.<xx>.<xx>.<xx> format";
 
-            writer.WriteLine($"Hello World from writer of type {writer.GetType()}");
-            writer.WriteLine("Welcome to CompareVersions. Would you like random version strings? y/n ");
+            this.ConsoleWriter.WriteLine($"Hello World from writer of type {this.ConsoleWriter.GetType()}");
+            this.ConsoleWriter.WriteLine("Welcome to CompareVersions. Would you like random version strings? y/n ");
 
-            string createRandomVersion = writer.ReadLine() ?? "n";
+            string createRandomVersion = this.ConsoleWriter.ReadLine() ?? "n";
             //Func<int, int, int> randomizer = Segment.RandomSegment;
             Func<SegmentType, int, int, Segment> randomizer = Segment.RandomSegment;
 
             if (createRandomVersion == "y" || createRandomVersion == "Y")
             {
-                writer.Write("Would you like to use equal version strings? y/n ");
+                this.ConsoleWriter.Write("Would you like to use equal version strings? y/n ");
                 string useEqual = Console.ReadLine() ?? "n";
 
                 if (useEqual == "y" || useEqual == "Y")
@@ -170,14 +166,14 @@ public class Application<T>
             }
             else
             {
-                writer.Write(inputVersion);
-                version1 = writer.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
+                this.ConsoleWriter.Write(inputVersion);
+                version1 = this.ConsoleWriter.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
 
-                writer.Write(inputVersion);
-                version2 = writer.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
+                this.ConsoleWriter.Write(inputVersion);
+                version2 = this.ConsoleWriter.ReadLine() ?? Version.CreateRandom(randomizer, separator).ToString();
             }
 
-            writer.Write($"The version strings are {version1} and {version2}");
+            this.ConsoleWriter.Write($"The version strings are {version1} and {version2}");
 
             //var result = comparisonOperations.CompareVersions(version1, version2);
             result = this.ComparisonOperations.Compare(version1, version2);
@@ -193,13 +189,13 @@ public class Application<T>
                 switch (result)
                 {
                     case < 0:
-                        writer.Write($"{version1} {isLessThan} {version2}: {theResultWas} {result}");
+                        this.ConsoleWriter.Write($"{version1} {isLessThan} {version2}: {theResultWas} {result}");
                         break;
                     case 0:
-                        writer.Write($"{version1} {isEqualTo} {version2}: {theResultWas} {result}");
+                        this.ConsoleWriter.Write($"{version1} {isEqualTo} {version2}: {theResultWas} {result}");
                         break;
                     case > 0:
-                        writer.Write($"{version1} {isGreaterThan} {version2}: {theResultWas} {result}");
+                        this.ConsoleWriter.Write($"{version1} {isGreaterThan} {version2}: {theResultWas} {result}");
                         break;
                 }
             }

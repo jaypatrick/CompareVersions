@@ -497,7 +497,7 @@ public class Version : IEnumerable<Segment>,
     }
 
     /// <summary>
-    ///
+    /// Represents a string representation of the object
     /// </summary>
     /// <param name="format">The format.</param>
     /// <param name="formatProvider">The format provider.</param>
@@ -604,7 +604,7 @@ public class Version : IEnumerable<Segment>,
     }
 
     /// <summary>
-    ///
+    /// Parses the object
     /// </summary>
     /// <param name="s"></param>
     /// <param name="provider"></param>
@@ -615,7 +615,7 @@ public class Version : IEnumerable<Segment>,
     }
 
     /// <summary>
-    ///
+    /// Parses the object
     /// </summary>
     /// <param name="s"></param>
     /// <param name="provider"></param>
@@ -664,7 +664,7 @@ public class Version : IEnumerable<Segment>,
     }
 
     /// <summary>
-    ///
+    /// Tries to parse the content
     /// </summary>
     /// <param name="s"></param>
     /// <param name="provider"></param>
@@ -677,7 +677,7 @@ public class Version : IEnumerable<Segment>,
     }
 
     /// <summary>
-    ///
+    /// Tries to parse the object
     /// </summary>
     /// <param name="s"></param>
     /// <param name="provider"></param>
@@ -742,7 +742,7 @@ public class Version : IEnumerable<Segment>,
     /// A value that indicates the relative order of the objects being compared. The return value has these meanings:
     /// <list type="table"><listheader><term> Value</term><description> Meaning</description></listheader><item><term> Less than zero</term><description> This instance precedes <paramref name="value" /> in the sort order.</description></item><item><term> Zero</term><description> This instance occurs in the same position in the sort order as <paramref name="value" />.</description></item><item><term> Greater than zero</term><description> This instance follows <paramref name="value" /> in the sort order.</description></item></list>
     /// </returns>
-    public int CompareTo([AllowNull] Version value)
+    public int CompareTo(Version? value)
     {
         if (value == null)
             return 1;
@@ -929,19 +929,9 @@ public class Version : IEnumerable<Segment>,
     /// </returns>
     public static Version operator +(Version left, Version right)
     {
-        List<Segment> segments = new();
-
-        foreach (var s in left)
-        {
-            foreach (var r in right)
-            {
-                if (s.SegmentType == r.SegmentType)
-                {
-                    var segment = s + r;
-                    segments.Add(segment);
-                }
-            }
-        }
+        List<Segment> segments = (left.SelectMany(s => right, (s, r) => new { s, r })
+            .Where(@t => @t.s.SegmentType == @t.r.SegmentType)
+            .Select(@t => @t.s + @t.r)).ToList();
 
         return new Version(segments);
     }

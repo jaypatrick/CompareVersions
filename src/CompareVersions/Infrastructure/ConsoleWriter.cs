@@ -4,7 +4,7 @@
 ///     Represents an <see cref="IMessageWriter"/> object that writes to the standard output stream
 /// </summary>
 /// <seealso cref="CompareVersions.Interfaces.IMessageWriter" />
-public class ConsoleWriter : IMessageWriter
+public class ConsoleWriter : IConsoleWriter
 {
     /// <summary>
     /// Gets a value indicating whether this instance is output redirected.

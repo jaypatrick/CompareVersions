@@ -20,8 +20,8 @@ public static class Program
                 services
                     .AddTransient<IComparisonOperations<Version>, VersionComparer<Version>>()
                     .AddHostedService<Worker>()
-                    .AddTransient<IMessageWriter, ConsoleWriter>()
-                    .AddTransient<ICommandLine, CommandLineOptions>()
+                    .AddScoped<IConsoleWriter, ConsoleWriter>()
+                    .AddScoped<ICommandLine, CommandLineOptions>()
                     .AddScoped<Version, Version>()
                     .AddScoped<Application<Version>>())
             .Build();
