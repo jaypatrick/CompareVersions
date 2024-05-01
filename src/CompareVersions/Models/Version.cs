@@ -1,4 +1,4 @@
-﻿namespace CompareVersions.Models;
+namespace CompareVersions.Models;
 
 /// <summary>
 /// Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment" /> objects
@@ -97,7 +97,7 @@ public class Version : IEnumerable<Segment>,
 
     {
         var segmentedString = versionString.Split(separator);
-        List<Segment> segments = new();
+        List<Segment> segments = [];
 
         for (int i = 0; i < segmentedString.Length; i++)
         {
