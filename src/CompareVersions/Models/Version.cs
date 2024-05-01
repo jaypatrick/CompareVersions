@@ -1,4 +1,4 @@
-namespace CompareVersions.Models;
+﻿namespace CompareVersions.Models;
 
 /// <summary>
 /// Class that represents a Version object, consisting of major.minor.patch.build <see cref="Segment" /> objects
