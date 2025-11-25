@@ -21,6 +21,7 @@ public class Version : IEnumerable<Segment>,
     IComparable,
     ICloneable,
     IAdditionOperators<Version, Version, Version>,
+    ISubtractionOperators<Version, Version, Version>,
     IAdditiveIdentity<Version, Version>,
     ISpanFormattable,
     ISpanParsable<Version>,
@@ -916,6 +917,31 @@ public class Version : IEnumerable<Segment>,
                     var segment = s + r;
                     segments.Add(segment);
                 }
+            }
+        }
+
+        return new Version(segments);
+    }
+
+    /// <summary>
+    /// Implements the operator op_Subtraction.
+    /// </summary>
+    /// <param name="left">The left.</param>
+    /// <param name="right">The right.</param>
+    /// <returns>
+    /// The result of the operator.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when subtraction would result in negative segment values</exception>
+    public static Version operator -(Version left, Version right)
+    {
+        List<Segment> segments = new();
+
+        foreach (var s in left)
+        {
+            foreach (var r in right.Where(r => r.SegmentType == s.SegmentType))
+            {
+                var segment = s - r;
+                segments.Add(segment);
             }
         }
 
