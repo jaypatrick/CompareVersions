@@ -8,6 +8,7 @@
 /// <seealso cref="IComparable" />
 /// <seealso cref="IAdditionOperators{TSelf, TOther, TResult}"/>
 /// <seealso cref="IAdditiveIdentity{TSelf, TResult}"/>
+/// <seealso cref="ISubtractionOperators{TSelf, TOther, TResult}"/>
 /// <seealso cref="IIncrementOperators{TSelf}"/>
 /// <seealso cref="IDecrementOperators{TSelf}"/>
 [Serializable()]
@@ -16,6 +17,7 @@ public class Segment : IComparable<Segment>,
     IComparable,
     IAdditionOperators<Segment, Segment, Segment>,
     IAdditiveIdentity<Segment, Segment>,
+    ISubtractionOperators<Segment, Segment, Segment>,
     IIncrementOperators<Segment>,
     IDecrementOperators<Segment>
 {
@@ -244,6 +246,29 @@ public class Segment : IComparable<Segment>,
         };
 
         var result = segments.Sum(s => s.Value);
+        return new(left.SegmentType, result);
+    }
+
+    /// <summary>
+    /// Implements the operator op_Subtraction.
+    /// </summary>
+    /// <param name="left">The left.</param>
+    /// <param name="right">The right.</param>
+    /// <returns>
+    /// The result of the operator.
+    /// </returns>
+    /// <exception cref="ArgumentException">Segment type mismatch</exception>
+    /// <exception cref="ArgumentOutOfRangeException">Result would be negative</exception>
+    public static Segment operator -(Segment left, Segment right)
+    {
+        if (left.SegmentType != right.SegmentType)
+            throw new ArgumentException($"Segment type of {nameof(left)} is {left.SegmentType} and does not match {nameof(right)} segment type which is {right.SegmentType}");
+
+        var result = left.Value - right.Value;
+
+        if (result < Constants.VersionSegmentFloor)
+            throw new ArgumentOutOfRangeException(nameof(result), $"Subtraction result {result} is less than the minimum allowed value {Constants.VersionSegmentFloor}");
+
         return new(left.SegmentType, result);
     }
 

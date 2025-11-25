@@ -90,20 +90,17 @@ public class Application<T>
     /// <returns>A <see cref="System.Int64"/>representing the result of the compare operation. -1 means the left side was greater, 0 means they are equal, and 1 means the right side is larger</returns>
     public async Task<int> RunAsync(IList<string> args)
     {
-        // standard console, TODO: need to also set up logging writer
-        //var writer = this.ConsoleWriter;
+        // Use console writer for interactive operations, logging writers are available via MessageWriters collection
         var writer = _writer;
-        char separator = Constants.VersionSeparators[0];
 
-        // TODO: Finish setting up the command line options here
-        //var rootCommand = new RootCommand("This is the root command. ");
-
-        //rootCommand.Description = "A simple app to compare version strings.";
-        //rootCommand.AddOption(this.CommandLine.VersionsOption);
-        //rootCommand.SetHandler((versionOptions) => versionOptions.Console = this.ConsoleWriter);
-        //rootCommand.Handler = CommandHandler.Create<IMessageWriter>((writer) => HandleVersions(args));
-
-        //var result = await rootCommand.InvokeAsync(args.ToArray());
+        // Log to all registered message writers
+        foreach (var messageWriter in MessageWriters)
+        {
+            if (messageWriter != _writer) // Don't double-log to console
+            {
+                messageWriter.WriteLine($"Starting CompareVersions application with {args.Count} arguments");
+            }
+        }
 
         await HandleVersions(args);
 
@@ -118,10 +115,17 @@ public class Application<T>
         }
         else
         {
+            // Log application exit
+            foreach (var messageWriter in MessageWriters)
+            {
+                if (messageWriter != _writer)
+                {
+                    messageWriter.WriteLine("CompareVersions application exiting");
+                }
+            }
             Environment.Exit(result);
         }
 
-        //Console.ReadLine();
         writer.ReadLine();
         return result;
     }
