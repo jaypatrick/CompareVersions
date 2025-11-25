@@ -938,13 +938,10 @@ public class Version : IEnumerable<Segment>,
 
         foreach (var s in left)
         {
-            foreach (var r in right)
+            foreach (var r in right.Where(r => r.SegmentType == s.SegmentType))
             {
-                if (s.SegmentType == r.SegmentType)
-                {
-                    var segment = s - r;
-                    segments.Add(segment);
-                }
+                var segment = s - r;
+                segments.Add(segment);
             }
         }
 
