@@ -583,6 +583,7 @@ public class VersionTests
         var identity = Version.AdditiveIdentity;
 
         // Assert
+        identity.Should().NotBeNull("AdditiveIdentity should not be null");
         identity.ToString().Should().Be("0.0.0.0");
     }
 
